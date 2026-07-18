@@ -33,5 +33,17 @@ rm -rf "$STAGE/$NAME/pkg/obj" "$STAGE/$NAME/pkg/bootstrap" 2>/dev/null || true
 
 OUT="$OUT_DIR/${NAME}.tbz"
 tar -C "$STAGE" -cjf "$OUT" "$NAME"
-ls -lh "$OUT"
+
+SUMS="$OUT_DIR/SHA256SUMS"
+if command -v sha256sum >/dev/null 2>&1; then
+	(cd "$OUT_DIR" && sha256sum "$(basename "$OUT")" > SHA256SUMS)
+elif command -v shasum >/dev/null 2>&1; then
+	(cd "$OUT_DIR" && shasum -a 256 "$(basename "$OUT")" > SHA256SUMS)
+else
+	echo "need sha256sum or shasum to write $SUMS" >&2
+	exit 1
+fi
+
+ls -lh "$OUT" "$SUMS"
 echo "$OUT"
+echo "$SUMS"

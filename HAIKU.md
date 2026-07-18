@@ -1,7 +1,6 @@
-# go-haiku
+# go-haiku notes
 
-Haiku OS port of the Go toolchain, based on [korli/go](https://github.com/korli/go)
-and kept in sync with [golang/go](https://github.com/golang/go).
+Companion to the root [README.md](README.md).
 
 ## Branches
 
@@ -11,39 +10,35 @@ and kept in sync with [golang/go](https://github.com/golang/go).
 | `golang-1.XX-haiku` | Future major lines |
 | `golang-master-haiku` | Tracking upstream master (experimental) |
 
-## Tags and releases
+## Tags
 
-Tag format: `goVERSION-haiku.N`
+Format: `goVERSION-haiku.N` (example: `go1.26.5-haiku.1`)
 
-Examples:
+Assets: `go-VERSION-haiku-amd64-bootstrap.tbz` and `SHA256SUMS`
 
-- `go1.26.5-haiku.1`
-- `go1.26.5-haiku.2` (rebuild / packaging fix)
-
-Release assets:
-
-- `go-VERSION-haiku-amd64-bootstrap.tbz` bootstrap toolchain for Haiku amd64
-- Source archive from the tag
-
-## Quick start on Haiku
-
-```sh
-curl -fsSL -o go-bootstrap.tbz \
-  https://github.com/OWNER/go-haiku/releases/download/go1.26.5-haiku.1/go-1.26.5-haiku-amd64-bootstrap.tbz
-mkdir -p ~/go && tar -xjf go-bootstrap.tbz -C ~/go --strip-components=1
-export GOROOT=~/go
-export PATH="$GOROOT/bin:$PATH"
-go version
-```
-
-## Maintenance
-
-See [haiku/README.md](haiku/README.md) for upstream sync, CI, and release steps.
-
-## Remotes (local clone)
+## Remotes
 
 ```text
-origin    your GitHub fork (set after you create the repo)
+origin    git@github.com:Quad4-Software/go-haiku.git
 upstream  https://github.com/golang/go.git
-korli     https://github.com/korli/go.git
 ```
+
+Port history started from [korli/go](https://github.com/korli/go). The bootstrap
+seed in `haiku/bootstrap.lock` still points at korli's first Haiku release until
+Quad4 publishes its own.
+
+## Compatibility
+
+CI targets Haiku **r1beta5**. That image predates `SOCK_CLOEXEC` /
+`SOCK_NONBLOCK` as socket type flags and `accept4`. This port creates sockets
+the Darwin way (`socket` then `CloseOnExec` / `SetNonblock`).
+
+## Security
+
+See [haiku/CHANGES.md](haiku/CHANGES.md) for the full audit trail.
+
+Short version:
+
+- Bootstrap pin + allowlist: `haiku/bootstrap.lock`
+- CVE gate: `./haiku/scripts/audit-upstream-cves.sh`
+- Tree includes post-`go1.26.5` fixes for CVE-2026-56853 and CVE-2026-39821

@@ -1,0 +1,17 @@
+# Haiku artwork attribution
+
+Files in this directory are used only to identify Haiku OS support in
+documentation. They are not part of the Go toolchain.
+
+## Sources
+
+| File | Source |
+|------|--------|
+| `haiku_logo_black.png` | Haiku website R1/Beta3 press kit (`haiku/website` on GitHub) |
+| `haiku_logo.png` | https://raw.githubusercontent.com/haiku/website/master/static/images/logo.png |
+| `haiku_logo_white.svg` | https://www.haiku-os.org/images/haiku_logo_white.svg |
+
+Haiku(R) and the HAIKU logo(R) are registered trademarks of Haiku, Inc.
+See https://www.haiku-inc.org/trademarks/allowed_usage/
+
+Project site: https://www.haiku-os.org/

@@ -213,9 +213,12 @@ func exitThread(wait *atomic.Uint32) {
 
 var urandom_dev = []byte("/dev/random\x00")
 
+// Haiku O_CLOEXEC (fcntl.h). Keep local so we do not depend on regenerated cgo defs.
+const _haikuOCloexec = 0x40
+
 //go:nosplit
 func readRandom(r []byte) int {
-	fd := open(&urandom_dev[0], 0 /* O_RDONLY */, 0)
+	fd := open(&urandom_dev[0], _haikuOCloexec, 0)
 	n := read(fd, unsafe.Pointer(&r[0]), int32(len(r)))
 	closefd(fd)
 	return int(n)

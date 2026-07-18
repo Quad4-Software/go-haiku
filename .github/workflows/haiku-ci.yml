@@ -10,6 +10,30 @@ on:
     branches:
       - golang-*-haiku
       - main
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      bootstrap_url:
+        description: Optional bootstrap URL override (must be allowlisted GitHub release)
+        required: false
+        default: ''
+        type: string
+      bootstrap_sha256:
+        description: SHA-256 of bootstrap_url (required when URL is set)
+        required: false
+        default: ''
+        type: string
+      bootstrap_pin_tag:
+        description: Prefer this repo release tag (must include SHA256SUMS asset)
+        required: false
+        default: ''
+        type: string
+      net_tests:
+        description: Run loopback TCP/UDP smoke tests
+        required: true
+        default: true
+        type: boolean
 
 concurrency:
   group: haiku-ci-${{ github.event.pull_request.number || github.ref }}
@@ -20,8 +44,6 @@ permissions:
 
 env:
   HAIKU_RELEASE: r1beta5
-  # Seed bootstrap until this repo publishes its own releases.
-  BOOTSTRAP_URL: https://github.com/korli/go/releases/download/go1.26.1-haiku1/go-1.26.1-haiku-amd64-bootstrap.tbz
 
 jobs:
   haiku:
@@ -32,7 +54,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
         with:
-          fetch-depth: 1
+          fetch-depth: 0
+
+      - name: Audit upstream CVEs
+        run: |
+          set -euo pipefail
+          git remote add upstream https://github.com/golang/go.git 2>/dev/null || git remote set-url upstream https://github.com/golang/go.git
+          ver=$(sed -n '1p' VERSION | tr -d '\r')
+          git fetch --depth=200 upstream release-branch.go1.26
+          git fetch upstream "refs/tags/${ver}:refs/tags/${ver}" || true
+          chmod +x haiku/scripts/*.sh
+          ./haiku/scripts/audit-upstream-cves.sh upstream/release-branch.go1.26
+
+      - name: Resolve bootstrap
+        id: boot
+        env:
+          HAIKU_BOOTSTRAP_URL: ${{ inputs.bootstrap_url || '' }}
+          HAIKU_BOOTSTRAP_SHA256: ${{ inputs.bootstrap_sha256 || '' }}
+          HAIKU_BOOTSTRAP_PIN_TAG: ${{ inputs.bootstrap_pin_tag || '' }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          chmod +x haiku/scripts/*.sh
+          resolved=$(./haiku/scripts/resolve-bootstrap-url.sh)
+          url=${resolved%%$'\t'*}
+          sha=${resolved#*$'\t'}
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "sha256=$sha" >> "$GITHUB_OUTPUT"
+          echo "Using bootstrap: $url"
+          echo "SHA-256: $sha"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "net_tests=${{ inputs.net_tests }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "net_tests=true" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Build on Haiku
         uses: vmactions/haiku-vm@0ba6b98c8d7e5626f9defdd7403af49ad72b51df # v1.1.3
@@ -41,14 +96,15 @@ jobs:
           usesh: true
           copyback: false
           mem: 8192
+          cache-after-prepare: true
           prepare: |
             set -eu
-            pkgman install -y curl
-            mkdir -p /boot/home/user/bootstrap
-            curl -fsSL -o /tmp/go-bootstrap.tbz "${{ env.BOOTSTRAP_URL }}"
-            tar -xjf /tmp/go-bootstrap.tbz -C /boot/home/user/bootstrap --strip-components=1
-            test -x /boot/home/user/bootstrap/bin/go
-            /boot/home/user/bootstrap/bin/go version
+            pkgman install -y curl openssl
+            chmod +x haiku/scripts/*.sh
+            export HAIKU_BOOTSTRAP_URL='${{ steps.boot.outputs.url }}'
+            export HAIKU_BOOTSTRAP_SHA256='${{ steps.boot.outputs.sha256 }}'
+            export GITHUB_REPOSITORY='${{ github.repository }}'
+            ./haiku/scripts/fetch-bootstrap.sh /boot/home/user/bootstrap
           run: |
             set -eu
             export GOROOT_BOOTSTRAP=/boot/home/user/bootstrap
@@ -58,3 +114,7 @@ jobs:
             chmod +x haiku/scripts/*.sh
             ./haiku/scripts/haiku-build.sh
             ./haiku/scripts/haiku-smoke.sh
+            if [ "${{ steps.boot.outputs.net_tests }}" = "true" ]; then
+              ./haiku/scripts/haiku-net-prep.sh || true
+              ./haiku/scripts/haiku-net-smoke.sh
+            fi

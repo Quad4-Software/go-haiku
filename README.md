@@ -1,44 +1,90 @@
-> **go-haiku:** Haiku OS port. See [HAIKU.md](HAIKU.md) and [haiku/README.md](haiku/README.md).
+# go-haiku
 
-# The Go Programming Language
+<p align="center">
+  <a href="https://www.haiku-os.org/">
+    <img src="haiku/assets/haiku_logo_black.png" alt="Haiku" width="280"/>
+  </a>
+</p>
 
-Go is an open source programming language that makes it easy to build simple,
-reliable, and efficient software.
+<p align="center">
+  Go toolchain for <a href="https://www.haiku-os.org/">Haiku OS</a> (amd64)<br/>
+  Based on <a href="https://github.com/korli/go">korli/go</a> · synced with <a href="https://github.com/golang/go">golang/go</a>
+</p>
 
-![Gopher image](https://golang.org/doc/gopher/fiveyears.jpg)
-*Gopher image by [Renee French][rf], licensed under [Creative Commons 4.0 Attribution license][cc4-by].*
+**Current line:** Go **1.26.5** (+ post-tag CVE fixes) on branch `golang-1.26-haiku`
 
-Our canonical Git repository is located at https://go.googlesource.com/go.
-There is a mirror of the repository at https://github.com/golang/go.
+## Install (release)
 
-Unless otherwise noted, the Go source files are distributed under the
-BSD-style license found in the LICENSE file.
+Prefer a release bootstrap when available:
 
-### Download and Install
+- [Releases](https://github.com/Quad4-Software/go-haiku/releases)
 
-#### Binary Distributions
+```sh
+# Example once go1.26.5-haiku.1 is published:
+curl -fsSL -o go.tbz \
+  https://github.com/Quad4-Software/go-haiku/releases/download/go1.26.5-haiku.1/go-1.26.5-haiku-amd64-bootstrap.tbz
+curl -fsSL -o SHA256SUMS \
+  https://github.com/Quad4-Software/go-haiku/releases/download/go1.26.5-haiku.1/SHA256SUMS
+sha256sum -c SHA256SUMS --ignore-missing
+mkdir -p ~/go && tar -xjf go.tbz -C ~/go --strip-components=1
+export GOROOT=~/go
+export PATH="$GOROOT/bin:$PATH"
+go version
+```
 
-Official binary distributions are available at https://go.dev/dl/.
+Until the first Quad4 release exists, CI seeds from
+[korli go1.26.1-haiku1](https://github.com/korli/go/releases/tag/go1.26.1-haiku1)
+(pinned in `haiku/bootstrap.lock`).
 
-After downloading a binary release, visit https://go.dev/doc/install
-for installation instructions.
+## Build from source (on Haiku)
 
-#### Install From Source
+You need an existing Haiku Go bootstrap (`GOROOT_BOOTSTRAP`).
 
-If a binary distribution is not available for your combination of
-operating system and architecture, visit
-https://go.dev/doc/install/source
-for source installation instructions.
+```sh
+git clone https://github.com/Quad4-Software/go-haiku.git
+cd go-haiku
+git checkout golang-1.26-haiku
 
-### Contributing
+# Bootstrap: release asset or korli seed (see haiku/bootstrap.lock)
+./haiku/scripts/fetch-bootstrap.sh ~/go-bootstrap
+export GOROOT_BOOTSTRAP=~/go-bootstrap
 
-Go is the work of thousands of contributors. We appreciate your help!
+./haiku/scripts/haiku-build.sh
+export GOROOT=$(pwd)
+export PATH="$GOROOT/bin:$PATH"
+go version
+```
 
-To contribute, please read the contribution guidelines at https://go.dev/doc/contribute.
+Smoke tests:
 
-Note that the Go project uses the issue tracker for bug reports and
-proposals only. See https://go.dev/wiki/Questions for a list of
-places to ask questions about the Go language.
+```sh
+./haiku/scripts/haiku-smoke.sh
+./haiku/scripts/haiku-net-smoke.sh
+```
 
-[rf]: https://reneefrench.blogspot.com/
-[cc4-by]: https://creativecommons.org/licenses/by/4.0/
+## Docs
+
+| Doc | Purpose |
+|-----|---------|
+| [haiku/CHANGES.md](haiku/CHANGES.md) | What this fork changed (audit trail) |
+| [haiku/README.md](haiku/README.md) | Sync, CI, release maintenance |
+| [HAIKU.md](HAIKU.md) | Branches, tags, security notes |
+| [haiku/bootstrap.lock](haiku/bootstrap.lock) | Pinned bootstrap URL + SHA-256 |
+
+Upstream Go docs still apply for the language and stdlib:
+https://go.dev/doc/
+
+## Security / auditability
+
+- Bootstrap downloads are **URL-allowlisted** and **SHA-256 pinned**
+- Releases publish `SHA256SUMS`
+- CI runs `haiku/scripts/audit-upstream-cves.sh` against `upstream/release-branch.go1.26`
+- See [haiku/CHANGES.md](haiku/CHANGES.md) for CVE merges and port fixes
+
+## License
+
+Go source: BSD-style license in [LICENSE](LICENSE).
+
+Haiku logo artwork is a trademark of Haiku, Inc. Attribution in
+[haiku/assets/ATTRIBUTION.txt](haiku/assets/ATTRIBUTION.txt).
+Marks link to https://www.haiku-os.org/

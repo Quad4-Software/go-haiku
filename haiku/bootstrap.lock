@@ -1,0 +1,9 @@
+# Pinned Haiku bootstrap seed (korli go1.26.1-haiku1).
+# Update after publishing a Quad4-Software/go-haiku release bootstrap.
+# Format: KEY=value (no spaces around =).
+
+HAIKU_BOOTSTRAP_URL=https://github.com/korli/go/releases/download/go1.26.1-haiku1/go-1.26.1-haiku-amd64-bootstrap.tbz
+HAIKU_BOOTSTRAP_SHA256=b739784c8301a050c6aad7865b883ad06de5a6363fe0f2170cc9b502c728005b
+HAIKU_BOOTSTRAP_TAG=go1.26.1-haiku1
+HAIKU_BOOTSTRAP_ALLOWED_HOSTS=github.com
+HAIKU_BOOTSTRAP_ALLOWED_REPOS=korli/go,Quad4-Software/go-haiku
