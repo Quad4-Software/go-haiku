@@ -34,6 +34,14 @@ OSV (stdlib / toolchain `1.26.5`) reported no known vulns at audit time
 
 ---
 
+## 2026-07-18 — smoke std compile uses -exec=true
+
+`go test std -run=^$` still runs each test binary (init/TestMain). On Haiku,
+`runtime.test` exits with status 4 (SIGILL) during that startup. Smoke now
+matches `haiku-cross-386.sh`: `go test -exec=true std -run=^$` (compile only).
+
+---
+
 ## 2026-07-18 — smoke std compile logging
 
 `haiku-smoke.sh` runs `go test std -run=^$` from `$GOROOT/src` (outside the

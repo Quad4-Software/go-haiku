@@ -35,10 +35,12 @@ go mod init haiku.smoke >/dev/null 2>&1
 go build -o hello .
 ./hello
 
-# Compile std outside the temp module so module mode does not interfere.
-# Keep compiler errors on the CI log (do not redirect stdout/stderr).
-echo "Compiling std tests (-run=^$)..."
+# Compile std tests only. -run=^$ skips test bodies but still executes the
+# binary (TestMain/init). On Haiku, runtime.test can die with SIGILL
+# (reported as exit status 4). -exec=true matches haiku-cross-386.sh and
+# avoids running the binaries after a successful compile.
+echo "Compiling std tests (-run=^$ -exec=true)..."
 cd "$ROOT/src"
-go test -short -count=1 std -run=^$
+go test -short -count=1 -exec=true std -run=^$
 
 echo "smoke OK"
