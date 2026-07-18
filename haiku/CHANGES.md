@@ -68,7 +68,7 @@ Haiku with:
 | Failure | Fix |
 |---------|-----|
 | `internal/runtime/wasitest`: `undefined: syscall.Mkfifo` | exclude `haiku` from `nonblock_test.go` build tag (Haiku has no `syscall.Mkfifo`) |
-| `runtime`: `constant 2147508224 overflows int32` in `TestBadOpen` | cast Haiku `EBADF` via `uint32` and do not negate (runtime returns the BeOS-style bit pattern) |
+| `runtime`: `constant 2147508224 overflows int32` in `TestBadOpen` | assign Haiku `EBADF` through a non-constant `uint32` then `int32` wrap, and do not negate (runtime returns the BeOS-style bit pattern) |
 
 ---
 
