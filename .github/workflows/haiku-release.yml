@@ -1,0 +1,180 @@
+# Pinned: vmactions/haiku-vm@v1.1.3  0ba6b98c8d7e5626f9defdd7403af49ad72b51df
+name: Haiku Release
+
+on:
+  push:
+    tags:
+      - 'go*-haiku.*'
+  workflow_dispatch:
+    inputs:
+      go_version:
+        description: Go version without go prefix (e.g. 1.26.2)
+        required: true
+        type: string
+      haiku_revision:
+        description: Haiku packaging revision (tag becomes goVERSION-haiku.N)
+        required: true
+        default: '1'
+        type: string
+      ref:
+        description: Git ref to build (branch, tag, or SHA). Empty uses the workflow ref.
+        required: false
+        default: ''
+        type: string
+      bootstrap_url:
+        description: Bootstrap tarball URL (empty uses korli seed until this repo has releases)
+        required: false
+        default: ''
+        type: string
+      run_tests:
+        description: Run Haiku smoke tests before packaging
+        required: true
+        default: true
+        type: boolean
+      publish_tag:
+        description: Create and push tag goVERSION-haiku.N when using workflow_dispatch
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+env:
+  HAIKU_RELEASE: r1beta5
+  DEFAULT_BOOTSTRAP_URL: https://github.com/korli/go/releases/download/go1.26.1-haiku1/go-1.26.1-haiku-amd64-bootstrap.tbz
+
+jobs:
+  release:
+    name: Build bootstrap (${{ inputs.go_version || github.ref_name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - name: Resolve versions
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            GO_VERSION="${{ inputs.go_version }}"
+            HAIKU_REV="${{ inputs.haiku_revision }}"
+            REF="${{ inputs.ref }}"
+            if [ -z "$REF" ]; then
+              REF="${{ github.ref_name }}"
+            fi
+            TAG="go${GO_VERSION}-haiku.${HAIKU_REV}"
+            BOOTSTRAP_URL="${{ inputs.bootstrap_url }}"
+            RUN_TESTS="${{ inputs.run_tests }}"
+            PUBLISH_TAG="${{ inputs.publish_tag }}"
+          else
+            TAG="${GITHUB_REF_NAME}"
+            if [[ ! "$TAG" =~ ^go([0-9]+\.[0-9]+\.[0-9]+)-haiku\.([0-9]+)$ ]]; then
+              echo "Tag must match goX.Y.Z-haiku.N (got $TAG)" >&2
+              exit 1
+            fi
+            GO_VERSION="${BASH_REMATCH[1]}"
+            HAIKU_REV="${BASH_REMATCH[2]}"
+            REF="$TAG"
+            BOOTSTRAP_URL=""
+            RUN_TESTS=true
+            PUBLISH_TAG=false
+          fi
+          if [ -z "$BOOTSTRAP_URL" ]; then
+            BOOTSTRAP_URL="${DEFAULT_BOOTSTRAP_URL}"
+          fi
+          {
+            echo "go_version=$GO_VERSION"
+            echo "haiku_rev=$HAIKU_REV"
+            echo "tag=$TAG"
+            echo "ref=$REF"
+            echo "bootstrap_url=$BOOTSTRAP_URL"
+            echo "run_tests=$RUN_TESTS"
+            echo "publish_tag=$PUBLISH_TAG"
+            echo "asset=go-${GO_VERSION}-haiku-amd64-bootstrap.tbz"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.meta.outputs.ref }}
+
+      - name: Ensure VERSION matches release
+        shell: bash
+        run: |
+          set -euo pipefail
+          want="go${{ steps.meta.outputs.go_version }}"
+          have=$(sed -n '1p' VERSION | tr -d '\r')
+          if [ "$have" != "$want" ]; then
+            printf '%s\ntime %s\n' "$want" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > VERSION
+            echo "Updated VERSION to $want"
+          fi
+          cat VERSION
+
+      - name: Build and package on Haiku
+        uses: vmactions/haiku-vm@0ba6b98c8d7e5626f9defdd7403af49ad72b51df # v1.1.3
+        with:
+          release: ${{ env.HAIKU_RELEASE }}
+          usesh: true
+          copyback: true
+          mem: 8192
+          prepare: |
+            set -eu
+            pkgman install -y curl
+            mkdir -p /boot/home/user/bootstrap
+            curl -fsSL -o /tmp/go-bootstrap.tbz "${{ steps.meta.outputs.bootstrap_url }}"
+            tar -xjf /tmp/go-bootstrap.tbz -C /boot/home/user/bootstrap --strip-components=1
+            test -x /boot/home/user/bootstrap/bin/go
+            /boot/home/user/bootstrap/bin/go version
+          run: |
+            set -eu
+            export GOROOT_BOOTSTRAP=/boot/home/user/bootstrap
+            export GOCACHE=/boot/home/user/.cache/go-build
+            export GOTMPDIR=/boot/home/user/tmp
+            mkdir -p "$GOCACHE" "$GOTMPDIR"
+            chmod +x haiku/scripts/*.sh
+            ./haiku/scripts/haiku-build.sh
+            if [ "${{ steps.meta.outputs.run_tests }}" = "true" ]; then
+              ./haiku/scripts/haiku-smoke.sh
+            fi
+            ./haiku/scripts/package-bootstrap.sh "$(pwd)/haiku/dist"
+            ls -lh haiku/dist
+            # Shrink copyback: keep dist artifact and drop build outputs.
+            rm -rf bin pkg/obj pkg/bootstrap 2>/dev/null || true
+
+      - name: Create and push tag
+        if: github.event_name == 'workflow_dispatch' && steps.meta.outputs.publish_tag == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.meta.outputs.tag }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet VERSION; then
+            git add VERSION
+            git commit -m "release: ${TAG}"
+            git push origin HEAD
+          fi
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists"
+          else
+            git tag -a "$TAG" -m "$TAG"
+            git push origin "refs/tags/${TAG}"
+          fi
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.meta.outputs.tag }}"
+          ASSET="haiku/dist/${{ steps.meta.outputs.asset }}"
+          test -f "$ASSET"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$ASSET" --clobber
+          else
+            gh release create "$TAG" "$ASSET" \
+              --title "$TAG" \
+              --generate-notes
+          fi

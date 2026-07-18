@@ -1,3 +1,5 @@
+> **go-haiku:** Haiku OS port. See [HAIKU.md](HAIKU.md) and [haiku/README.md](haiku/README.md).
+
 # The Go Programming Language
 
 Go is an open source programming language that makes it easy to build simple,

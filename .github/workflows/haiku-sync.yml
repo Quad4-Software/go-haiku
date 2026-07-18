@@ -1,0 +1,89 @@
+name: Haiku Sync
+
+on:
+  workflow_dispatch:
+    inputs:
+      haiku_branch:
+        description: Haiku line branch to update
+        required: true
+        default: golang-1.26-haiku
+        type: string
+      upstream_ref:
+        description: Upstream golang/go ref (branch or tag)
+        required: true
+        default: release-branch.go1.26
+        type: string
+      create_pr:
+        description: Open a pull request instead of pushing the branch directly
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    name: Sync ${{ inputs.upstream_ref }} into ${{ inputs.haiku_branch }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.haiku_branch }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Add upstream remote
+        run: |
+          set -euo pipefail
+          git remote add upstream https://github.com/golang/go.git 2>/dev/null || git remote set-url upstream https://github.com/golang/go.git
+          git fetch upstream "${{ inputs.upstream_ref }}"
+
+      - name: Merge upstream
+        id: merge
+        shell: bash
+        run: |
+          set -euo pipefail
+          BRANCH="sync/${{ inputs.haiku_branch }}-${{ inputs.upstream_ref }}"
+          BRANCH=$(echo "$BRANCH" | tr '/:' '--')
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          if git merge --no-ff -m "Merge upstream/${{ inputs.upstream_ref }} into ${{ inputs.haiku_branch }}" FETCH_HEAD; then
+            echo "conflict=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Merge conflicts remain. Resolve locally with haiku/scripts/sync-upstream.sh" >&2
+            git merge --abort || true
+            echo "conflict=true" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Push branch
+        if: steps.merge.outputs.conflict == 'false'
+        run: git push -u origin HEAD
+
+      - name: Open pull request
+        if: inputs.create_pr && steps.merge.outputs.conflict == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh pr create \
+            --base "${{ inputs.haiku_branch }}" \
+            --head "${{ steps.merge.outputs.branch }}" \
+            --title "Sync upstream ${{ inputs.upstream_ref }} into ${{ inputs.haiku_branch }}" \
+            --body "Automated merge of \`upstream/${{ inputs.upstream_ref }}\` into \`${{ inputs.haiku_branch }}\`.
+
+          Haiku CI should build and smoke-test this PR before merge."
+
+      - name: Push directly
+        if: ${{ !inputs.create_pr && steps.merge.outputs.conflict == 'false' }}
+        run: |
+          set -euo pipefail
+          git checkout "${{ inputs.haiku_branch }}"
+          git merge --ff-only "${{ steps.merge.outputs.branch }}"
+          git push origin "${{ inputs.haiku_branch }}"
