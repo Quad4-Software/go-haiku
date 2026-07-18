@@ -28,10 +28,9 @@ export GOCACHE="${GOCACHE:-/boot/home/user/.cache/go-build}"
 export GOTMPDIR="${GOTMPDIR:-/boot/home/user/tmp}"
 export GOTOOLCHAIN=local
 export GOPROXY=off
-export GOMAXPROCS="${GO_BUILD_JOBS:-2}"
-mkdir -p "$GOCACHE"
-rm -rf "$GOTMPDIR"
-mkdir -p "$GOTMPDIR"
+export GOMAXPROCS="${GO_BUILD_JOBS:-1}"
+rm -rf "$GOTMPDIR" "$GOCACHE"
+mkdir -p "$GOCACHE" "$GOTMPDIR"
 
 # Compile-only 386 std check with the host amd64 toolchain before we
 # replace bin/ with 386 binaries that cannot run on this host.

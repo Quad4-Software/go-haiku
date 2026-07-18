@@ -34,6 +34,21 @@ OSV (stdlib / toolchain `1.26.5`) reported no known vulns at audit time
 
 ---
 
+## 2026-07-18 — Haiku build flake hardening
+
+`haiku-build.sh` now:
+
+- defaults `GOMAXPROCS` to **1** (override with `GO_BUILD_JOBS`)
+- wipes `GOCACHE` as well as `pkg`/`bin`/`GOTMPDIR` before `make.bash`
+- retries `make.bash` once after a full clean on failure
+
+This targets intermittent bootstrap `compile` exit 255 during toolchain1 on
+vmactions Haiku VMs (host image-cache I/O), not a source regression.
+
+`haiku-cross-386.sh` matches the GOCACHE wipe and default jobs=1.
+
+---
+
 ## 2026-07-17 — CI smoke module mode
 
 Smoke helpers create a temp module (`go mod init`) under `GOTMPDIR` before
@@ -81,9 +96,9 @@ Known requirements:
 - vmactions/anyvm remain amd64-only; 386 runtime coverage is the QEMU job.
 - CI smoke creates a temp module (`go mod init`) then `go build .` / `go run .`
   so module-mode Go does not require a pre-existing go.mod in the work tree.
-- Haiku build scripts wipe `pkg`/`bin`, cap `GOMAXPROCS` (default 2), and CI sets
-  `cache-after-prepare: false` to avoid corrupt `.a` archives under concurrent
-  host image-cache I/O.
+- Haiku build scripts wipe `pkg`/`bin`/`GOCACHE`, cap `GOMAXPROCS` (default 1),
+  retry `make.bash` once on failure, and CI sets `cache-after-prepare: false`
+  to avoid corrupt archives under concurrent host image-cache I/O.
 
 ---
 
