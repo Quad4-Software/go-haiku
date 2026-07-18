@@ -34,6 +34,14 @@ OSV (stdlib / toolchain `1.26.5`) reported no known vulns at audit time
 
 ---
 
+## 2026-07-18 — smoke std compile logging
+
+`haiku-smoke.sh` runs `go test std -run=^$` from `$GOROOT/src` (outside the
+temp hello module) and no longer redirects output to `/dev/null`, so CI shows
+compile failures instead of a bare SSH exit 1 after `hello`.
+
+---
+
 ## 2026-07-18 — Haiku build flake hardening
 
 `haiku-build.sh` now:

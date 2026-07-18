@@ -385,6 +385,7 @@ set -eu
 export GOROOT=/boot/home/user/go-386
 export PATH="$GOROOT/bin:$PATH"
 export GOTOOLCHAIN=local
+export GOPROXY=off
 export GOCACHE=/boot/home/user/.cache/go-build
 export GOTMPDIR=/boot/home/user/tmp
 mkdir -p "$GOCACHE" "$GOTMPDIR"
@@ -408,7 +409,10 @@ EOF
 go mod init haiku.smoke >/dev/null 2>&1
 go build -o hello .
 ./hello | grep 386
-go test -short -count=1 std -run=^$ >/dev/null
+cd "$GOROOT/src"
+go test -short -count=1 std -run=^$
+TMPNET=$(mktemp -d "$GOTMPDIR/haiku-net.XXXXXX")
+cd "$TMPNET"
 cat > netcheck.go <<'EOF'
 package main
 
@@ -464,7 +468,7 @@ func main() {
 	fmt.Println("netcheck OK")
 }
 EOF
-rm -f main.go
+go mod init haiku.netsmoke >/dev/null 2>&1
 go run .
 echo "qemu 386 smoke OK"
 """

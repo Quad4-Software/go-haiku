@@ -6,6 +6,7 @@ ROOT=$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)
 export GOROOT="$ROOT"
 export PATH="$ROOT/bin:$PATH"
 export GOTOOLCHAIN=local
+export GOPROXY=off
 export GOCACHE="${GOCACHE:-/boot/home/user/.cache/go-build}"
 mkdir -p "$GOCACHE"
 
