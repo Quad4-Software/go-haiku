@@ -34,6 +34,18 @@ OSV (stdlib / toolchain `1.26.5`) reported no known vulns at audit time
 
 ---
 
+## 2026-07-17 — CI smoke compile fixes
+
+`haiku-smoke.sh` runs `go test -short std -run=^$` (compile-only). That failed on
+Haiku with:
+
+| Failure | Fix |
+|---------|-----|
+| `internal/runtime/wasitest`: `undefined: syscall.Mkfifo` | exclude `haiku` from `nonblock_test.go` build tag (Haiku has no `syscall.Mkfifo`) |
+| `runtime`: `constant 2147508224 overflows int32` in `TestBadOpen` | cast Haiku `EBADF` via `uint32` and do not negate (runtime returns the BeOS-style bit pattern) |
+
+---
+
 ## 2026-07-17 — haiku/386 port
 
 Full `GOOS=haiku GOARCH=386` port for modern 32-bit Haiku (including BeOS-compat

@@ -39,13 +39,20 @@ func TestBadOpen(t *testing.T) {
 	if fd != -1 {
 		t.Errorf("open(%q)=%d, want -1", nonfile, fd)
 	}
+	// Haiku Errno values are BeOS-style (high bit set). Convert via uint32
+	// so the constant fits int32. Haiku runtime returns the bit pattern as
+	// int32 (already negative), not -errno.
+	wantEBADF := int32(uint32(syscall.EBADF))
+	if runtime.GOOS != "haiku" {
+		wantEBADF = -wantEBADF
+	}
 	var buf [32]byte
 	r := runtime.Read(-1, unsafe.Pointer(&buf[0]), int32(len(buf)))
-	if got, want := r, -int32(syscall.EBADF); got != want {
+	if got, want := r, wantEBADF; got != want {
 		t.Errorf("read()=%d, want %d", got, want)
 	}
 	w := runtime.Write(^uintptr(0), unsafe.Pointer(&buf[0]), int32(len(buf)))
-	if got, want := w, -int32(syscall.EBADF); got != want {
+	if got, want := w, wantEBADF; got != want {
 		t.Errorf("write()=%d, want %d", got, want)
 	}
 	c := runtime.Close(-1)
