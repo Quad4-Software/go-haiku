@@ -2,15 +2,26 @@
 # Resolve a pinned Haiku bootstrap URL and SHA-256.
 # Prints: URL<TAB>SHA256
 #
+# HAIKU_BOOTSTRAP_ARCH selects amd64 (default) or 386.
+#
 # Priority:
 # 1. HAIKU_BOOTSTRAP_URL + HAIKU_BOOTSTRAP_SHA256 (both required)
 # 2. HAIKU_BOOTSTRAP_PIN_TAG on this repo (asset + SHA256SUMS from that release)
-# 3. haiku/bootstrap.lock seed
+# 3. haiku/bootstrap.lock seed for the selected arch
 set -eu
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
 # shellcheck disable=SC1091
 . "$SCRIPT_DIR/bootstrap-common.sh"
+
+ARCH=${HAIKU_BOOTSTRAP_ARCH:-amd64}
+case "$ARCH" in
+amd64|386) ;;
+*)
+	echo "HAIKU_BOOTSTRAP_ARCH must be amd64 or 386 (got $ARCH)" >&2
+	exit 1
+	;;
+esac
 
 explicit_url=${HAIKU_BOOTSTRAP_URL:-}
 explicit_sha=${HAIKU_BOOTSTRAP_SHA256:-}
@@ -22,7 +33,6 @@ if [ -n "$explicit_url" ]; then
 		echo "HAIKU_BOOTSTRAP_URL set without HAIKU_BOOTSTRAP_SHA256" >&2
 		exit 1
 	fi
-	# Still load lock for allowlist defaults.
 	haiku_load_bootstrap_lock || true
 	haiku_url_allowed "$explicit_url"
 	printf '%s\t%s\n' "$explicit_url" "$explicit_sha"
@@ -34,12 +44,14 @@ haiku_load_bootstrap_lock
 fetch_release_asset() {
 	owner_repo=$1
 	tag=$2
+	arch=$3
 	if ! command -v curl >/dev/null 2>&1; then
 		return 1
 	fi
 	api="https://api.github.com/repos/${owner_repo}/releases/tags/${tag}"
 	json=$(curl -fsSL "$api" 2>/dev/null) || return 1
-	asset_url=$(printf '%s' "$json" | sed -n 's/.*"browser_download_url": "\([^"]*haiku-amd64-bootstrap\.tbz\)".*/\1/p' | head -n 1)
+	pat="haiku-${arch}-bootstrap\\.tbz"
+	asset_url=$(printf '%s' "$json" | sed -n 's/.*"browser_download_url": "\([^"]*'"$pat"'\)".*/\1/p' | head -n 1)
 	sums_url=$(printf '%s' "$json" | sed -n 's/.*"browser_download_url": "\([^"]*SHA256SUMS\)".*/\1/p' | head -n 1)
 	if [ -z "$asset_url" ] || [ -z "$sums_url" ]; then
 		return 1
@@ -60,17 +72,22 @@ fetch_release_asset() {
 }
 
 if [ -n "$pin_tag" ] && [ -n "$repo" ]; then
-	if out=$(fetch_release_asset "$repo" "$pin_tag"); then
+	if out=$(fetch_release_asset "$repo" "$pin_tag" "$ARCH"); then
 		printf '%s\n' "$out"
 		exit 0
 	fi
-	echo "pinned tag $pin_tag not usable on $repo, falling back to lock" >&2
+	echo "pinned tag $pin_tag ($ARCH) not usable on $repo, falling back to lock" >&2
 fi
 
-url=${HAIKU_BOOTSTRAP_URL:-}
-sha=${HAIKU_BOOTSTRAP_SHA256:-}
+if [ "$ARCH" = "386" ]; then
+	url=${HAIKU_BOOTSTRAP_URL_386:-}
+	sha=${HAIKU_BOOTSTRAP_SHA256_386:-}
+else
+	url=${HAIKU_BOOTSTRAP_URL:-}
+	sha=${HAIKU_BOOTSTRAP_SHA256:-}
+fi
 if [ -z "$url" ] || [ -z "$sha" ]; then
-	echo "bootstrap.lock missing HAIKU_BOOTSTRAP_URL or HAIKU_BOOTSTRAP_SHA256" >&2
+	echo "bootstrap.lock missing URL/SHA-256 for arch $ARCH" >&2
 	exit 1
 fi
 haiku_url_allowed "$url"

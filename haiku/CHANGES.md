@@ -22,10 +22,45 @@ git fetch upstream tag go1.26.5
 # Bootstrap pin (URL + SHA-256)
 cat haiku/bootstrap.lock
 ./haiku/scripts/resolve-bootstrap-url.sh
+HAIKU_BOOTSTRAP_ARCH=386 ./haiku/scripts/resolve-bootstrap-url.sh  # after 386 pin exists
+
+# Platforms
+# go tool dist list | grep haiku
+# expect haiku/amd64 and haiku/386
 ```
 
 OSV (stdlib / toolchain `1.26.5`) reported no known vulns at audit time
 (2026-07-17). Post-tag CVEs below were still missing until merged.
+
+---
+
+## 2026-07-17 — haiku/386 port
+
+Full `GOOS=haiku GOARCH=386` port for modern 32-bit Haiku (including BeOS-compat
+hybrids under `setarch x86`). BeOS R5 / `x86_gcc2` ABI is out of scope.
+
+| Area | Change |
+|------|--------|
+| dist / platform | `haiku/386` in `cgoEnabled` and `zosarch.go` |
+| linker / asm | Haiku ELF dynld, I386 TLS (GS), `movTLSReg` for `Hhaiku` |
+| runtime | `sys_haiku_386.s`, `rt0_haiku_386.s`, defs/signal, cgo `gcc_haiku_386.c` |
+| syscall / x/sys | `*_haiku_386*` + `mkall.sh` case (ILP32 sizes) |
+| bootstrap | `package-bootstrap.sh` arch arg, `haiku-cross-386.sh`, lock keys for 386 |
+| CI | amd64 job cross-builds + packages 386; QEMU job boots `x86_gcc2h` anyboot |
+| release | publishes amd64 + 386 tbz + combined `SHA256SUMS` |
+
+Known requirements:
+
+- On hybrids run Go under `setarch x86` (modern gcc/libs), never gcc2.
+- 386 lock pins stay empty until the first Quad4 386 bootstrap is published.
+- `z*_haiku_386.go` should be regenerated on real 32-bit Haiku when headers move.
+  Timespec/Timeval/`long` are ILP32 (`time_t` is 32-bit on Haiku i386).
+- vmactions/anyvm remain amd64-only; 386 runtime coverage is the QEMU job.
+- CI smoke uses `go build main.go` (not `go build .`) so module-mode Go does not
+  require a go.mod in the temp dir.
+- Haiku build scripts wipe `pkg`/`bin`, cap `GOMAXPROCS` (default 2), and CI sets
+  `cache-after-prepare: false` to avoid corrupt `.a` archives under concurrent
+  host image-cache I/O.
 
 ---
 

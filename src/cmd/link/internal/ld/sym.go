@@ -125,6 +125,10 @@ func (ctxt *Link) computeTLSOffset() {
 			// on 64-bit we use the last two regular TLS slots
 			ctxt.Tlsoffset = (64 - 2) * 8
 
+		case sys.I386:
+			// on 32-bit we use the last two regular TLS slots (pointer-sized)
+			ctxt.Tlsoffset = (64 - 2) * 4
+
 		}
 
 

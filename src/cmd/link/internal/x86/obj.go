@@ -62,7 +62,7 @@ func Init() (*sys.Arch, ld.Arch) {
 			Linuxdynld:     "/lib/ld-linux.so.2",
 			LinuxdynldMusl: "/lib/ld-musl-i386.so.1",
 			Freebsddynld:   "/usr/libexec/ld-elf.so.1",
-			Haikudynld:     "XXX",
+			Haikudynld:     "/system/runtime_loader",
 			Openbsddynld:   "/usr/libexec/ld.so",
 			Netbsddynld:    "/usr/libexec/ld.elf_so",
 			Solarisdynld:   "/lib/ld.so.1",
@@ -93,7 +93,8 @@ func archinit(ctxt *ld.Link) {
 	case objabi.Hlinux, /* elf32 executable */
 		objabi.Hfreebsd,
 		objabi.Hnetbsd,
-		objabi.Hopenbsd:
+		objabi.Hopenbsd,
+		objabi.Hhaiku:
 		ld.Elfinit(ctxt)
 
 		ld.HEADR = ld.ELFRESERVE

@@ -102,7 +102,8 @@ jobs:
             echo "bootstrap_pin_tag=$BOOTSTRAP_PIN_TAG"
             echo "run_tests=$RUN_TESTS"
             echo "publish_tag=$PUBLISH_TAG"
-            echo "asset=go-${GO_VERSION}-haiku-amd64-bootstrap.tbz"
+            echo "asset_amd64=go-${GO_VERSION}-haiku-amd64-bootstrap.tbz"
+            echo "asset_386=go-${GO_VERSION}-haiku-386-bootstrap.tbz"
           } >> "$GITHUB_OUTPUT"
 
       - name: Checkout
@@ -148,7 +149,7 @@ jobs:
           usesh: true
           copyback: true
           mem: 8192
-          cache-after-prepare: true
+          cache-after-prepare: false
           prepare: |
             set -eu
             pkgman install -y curl openssl
@@ -170,9 +171,10 @@ jobs:
               ./haiku/scripts/haiku-net-prep.sh || true
               ./haiku/scripts/haiku-net-smoke.sh
             fi
-            ./haiku/scripts/package-bootstrap.sh "$(pwd)/haiku/dist"
+            ./haiku/scripts/package-bootstrap.sh "$(pwd)/haiku/dist" amd64
+            ./haiku/scripts/haiku-cross-386.sh "$(pwd)/haiku/dist"
             ls -lh haiku/dist
-            rm -rf bin pkg/obj pkg/bootstrap 2>/dev/null || true
+            rm -rf bin pkg 2>/dev/null || true
 
       - name: Create and push tag
         if: github.event_name == 'workflow_dispatch' && steps.meta.outputs.publish_tag == 'true'
@@ -201,14 +203,16 @@ jobs:
         run: |
           set -euo pipefail
           TAG="${{ steps.meta.outputs.tag }}"
-          ASSET="haiku/dist/${{ steps.meta.outputs.asset }}"
+          ASSET64="haiku/dist/${{ steps.meta.outputs.asset_amd64 }}"
+          ASSET32="haiku/dist/${{ steps.meta.outputs.asset_386 }}"
           SUMS="haiku/dist/SHA256SUMS"
-          test -f "$ASSET"
+          test -f "$ASSET64"
+          test -f "$ASSET32"
           test -f "$SUMS"
           if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release upload "$TAG" "$ASSET" "$SUMS" --clobber
+            gh release upload "$TAG" "$ASSET64" "$ASSET32" "$SUMS" --clobber
           else
-            gh release create "$TAG" "$ASSET" "$SUMS" \
+            gh release create "$TAG" "$ASSET64" "$ASSET32" "$SUMS" \
               --title "$TAG" \
               --generate-notes
           fi

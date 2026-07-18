@@ -7,7 +7,7 @@
 </p>
 
 <p align="center">
-  Go toolchain for <a href="https://www.haiku-os.org/">Haiku OS</a> (amd64)<br/>
+  Go toolchain for <a href="https://www.haiku-os.org/">Haiku OS</a> (amd64 and 386)<br/>
   Based on <a href="https://github.com/korli/go">korli/go</a> · synced with <a href="https://github.com/golang/go">golang/go</a>
 </p>
 
@@ -20,21 +20,27 @@ Prefer a release bootstrap when available:
 - [Releases](https://github.com/Quad4-Software/go-haiku/releases)
 
 ```sh
-# Example once go1.26.5-haiku.1 is published:
+# Example once go1.26.5-haiku.1 is published (amd64 or 386 asset):
+ARCH=amd64   # or 386
 curl -fsSL -o go.tbz \
-  https://github.com/Quad4-Software/go-haiku/releases/download/go1.26.5-haiku.1/go-1.26.5-haiku-amd64-bootstrap.tbz
+  https://github.com/Quad4-Software/go-haiku/releases/download/go1.26.5-haiku.1/go-1.26.5-haiku-${ARCH}-bootstrap.tbz
 curl -fsSL -o SHA256SUMS \
   https://github.com/Quad4-Software/go-haiku/releases/download/go1.26.5-haiku.1/SHA256SUMS
 sha256sum -c SHA256SUMS --ignore-missing
 mkdir -p ~/go && tar -xjf go.tbz -C ~/go --strip-components=1
 export GOROOT=~/go
 export PATH="$GOROOT/bin:$PATH"
+# On 32-bit hybrid images, use the modern secondary arch:
+#   setarch x86
 go version
 ```
 
-Until the first Quad4 release exists, CI seeds from
+Until the first Quad4 release exists, amd64 CI seeds from
 [korli go1.26.1-haiku1](https://github.com/korli/go/releases/tag/go1.26.1-haiku1)
-(pinned in `haiku/bootstrap.lock`).
+(pinned in `haiku/bootstrap.lock`). The first 386 bootstrap is produced by
+cross-building on amd64 Haiku (`haiku/scripts/haiku-cross-386.sh`).
+
+**Not supported:** BeOS R5 ABI / `x86_gcc2`. Go needs modern Haiku `x86` libs.
 
 ## Build from source (on Haiku)
 
@@ -61,6 +67,16 @@ Smoke tests:
 ./haiku/scripts/haiku-smoke.sh
 ./haiku/scripts/haiku-net-smoke.sh
 ```
+
+### Cross-build haiku/386 (on amd64 Haiku)
+
+```sh
+export GOROOT_BOOTSTRAP=~/go-bootstrap
+./haiku/scripts/haiku-build.sh          # amd64 first (recommended)
+./haiku/scripts/haiku-cross-386.sh      # packages haiku/dist/*-386-bootstrap.tbz
+```
+
+On 32-bit hybrid images, use modern libs: `setarch x86` (never `x86_gcc2`).
 
 ## Docs
 

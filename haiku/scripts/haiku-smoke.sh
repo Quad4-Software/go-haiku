@@ -28,7 +28,8 @@ func main() {
 }
 EOF
 
-go build -o hello .
+# Single-file build: avoid "go.mod file not found" from `go build .`
+go build -o hello main.go
 ./hello
 
 # Compile std subset without network.

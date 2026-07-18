@@ -179,6 +179,12 @@ haiku_amd64)
 	mksysnum=
 	mktypes="GOARCH=$GOARCH go tool cgo -godefs"
 	;;
+haiku_386)
+	mksyscall="./mksyscall_haiku.pl"
+	mkerrors="$mkerrors -m32"
+	mksysnum=
+	mktypes="GOARCH=$GOARCH go tool cgo -godefs"
+	;;
 linux_386)
 	mkerrors="$mkerrors -m32"
 	mksyscall="./mksyscall.pl -l32"

@@ -5125,6 +5125,17 @@ func (ab *AsmBuf) doasm(ctxt *obj.Link, cursym *obj.LSym, p *obj.Prog) {
 									0x8B)
 								ab.asmand(ctxt, cursym, p, &pp.From, &p.To)
 							}
+						case objabi.Hhaiku:
+							// Haiku i386 TLS base is 0(GS).
+							pp.From = p.From
+							pp.From.Type = obj.TYPE_MEM
+							pp.From.Reg = REG_GS
+							pp.From.Offset = 0
+							pp.From.Index = REG_NONE
+							pp.From.Scale = 0
+							ab.Put2(0x65, // GS
+								0x8B)
+							ab.asmand(ctxt, cursym, p, &pp.From, &p.To)
 						case objabi.Hplan9:
 							pp.From = obj.Addr{}
 							pp.From.Type = obj.TYPE_MEM

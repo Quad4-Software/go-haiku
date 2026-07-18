@@ -6,7 +6,7 @@ touching CI/bootstrap.
 
 ## What this repo is
 
-**go-haiku** is a Go toolchain port for **Haiku OS (amd64)**.
+**go-haiku** is a Go toolchain port for **Haiku OS** (`haiku/amd64` and `haiku/386`).
 
 | Fact | Value |
 |------|--------|
@@ -14,8 +14,10 @@ touching CI/bootstrap.
 | Active branch | `golang-1.26-haiku` |
 | Upstream | https://github.com/golang/go (`upstream` remote) |
 | Port lineage | Started from [korli/go](https://github.com/korli/go) (do **not** add korli as a remote) |
-| CI guest | Haiku **r1beta5** via `vmactions/haiku-vm` |
-| Official cross-compile | **Not supported.** Builds must run on Haiku (VM/CI or real hardware) |
+| CI guest (amd64) | Haiku **r1beta5** via `vmactions/haiku-vm` |
+| CI guest (386) | QEMU + official Haiku **x86** `x86_gcc2h` anyboot (vmactions/anyvm are amd64-only today) |
+| First 386 bootstrap | Cross-built on amd64 Haiku (`haiku/scripts/haiku-cross-386.sh`) |
+| BeOS R5 ABI | **Not supported.** On hybrids use modern `setarch x86` (gcc13), never `x86_gcc2` |
 
 Do not treat this like a normal application repo. Most of the tree is upstream
 Go. Haiku-specific and fork-ops code lives under `haiku/`, `.github/workflows/haiku-*.yml`,
@@ -40,7 +42,7 @@ upstream  https://github.com/golang/go.git
 | [HAIKU.md](HAIKU.md) | Branches, tags, compatibility |
 | [haiku/README.md](haiku/README.md) | CI, sync, release ops |
 | [haiku/CHANGES.md](haiku/CHANGES.md) | **Audit trail** of intentional fork changes |
-| [haiku/bootstrap.lock](haiku/bootstrap.lock) | Pinned bootstrap URL + SHA-256 |
+| [haiku/bootstrap.lock](haiku/bootstrap.lock) | Pinned bootstrap URL + SHA-256 (amd64 and 386) |
 
 When you land a meaningful port, security, or CI change, **append** to
 `haiku/CHANGES.md` in the same change set.
@@ -127,10 +129,28 @@ Use Actions **Haiku Release** (preferred) or push a matching tag.
 Release **must** publish:
 
 - `go-VERSION-haiku-amd64-bootstrap.tbz`
-- `SHA256SUMS`
+- `go-VERSION-haiku-386-bootstrap.tbz`
+- `SHA256SUMS` (both arches)
 
-After the first successful Quad4 release, update `haiku/bootstrap.lock` to the
-new URL + SHA-256 and allowlist `Quad4-Software/go-haiku` (already allowlisted).
+After the first successful Quad4 release, update `haiku/bootstrap.lock` amd64
+and 386 URL/SHA-256 pins (`HAIKU_BOOTSTRAP_URL_386` /
+`HAIKU_BOOTSTRAP_SHA256_386`). Allowlist already includes
+`Quad4-Software/go-haiku`.
+
+To mint the first 386 bootstrap on an amd64 Haiku host:
+
+```sh
+export GOROOT_BOOTSTRAP=~/go-bootstrap   # amd64 Haiku Go
+./haiku/scripts/haiku-build.sh           # optional amd64 build + smoke
+./haiku/scripts/haiku-cross-386.sh        # compile-only 386 std, then package
+```
+
+On 32-bit hybrids, regenerate syscall `z*` files with modern arch only:
+
+```sh
+setarch x86
+# then src/syscall mkall / go generate paths as documented in haiku/CHANGES.md
+```
 
 ### D. Smoke expectations on Haiku
 
@@ -185,7 +205,7 @@ refactors of unrelated upstream packages.
 - Do **not** generate extra markdown docs unless asked (exception: update
   `haiku/CHANGES.md` when making material changes).
 - Do **not** weaken bootstrap allowlists or skip SHA-256 verification “temporarily.”
-- Do **not** claim Haiku support for arches other than amd64 without evidence.
+- Do **not** claim BeOS R5 / `x86_gcc2` ABI support. Haiku 386 means modern `x86`.
 - Prefer editing existing Haiku scripts/workflows over inventing parallel tooling.
 - Keep comments in Go doc style. No emoji in docs or code.
 - When unsure whether a conflict is Haiku-specific, diff against the upstream

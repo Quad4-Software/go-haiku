@@ -1,9 +1,16 @@
-# Pinned Haiku bootstrap seed (korli go1.26.1-haiku1).
-# Update after publishing a Quad4-Software/go-haiku release bootstrap.
+# Pinned Haiku bootstrap seeds.
+# Update after publishing Quad4-Software/go-haiku release bootstraps.
 # Format: KEY=value (no spaces around =).
 
+# amd64 seed (korli) until Quad4 amd64 release exists.
 HAIKU_BOOTSTRAP_URL=https://github.com/korli/go/releases/download/go1.26.1-haiku1/go-1.26.1-haiku-amd64-bootstrap.tbz
 HAIKU_BOOTSTRAP_SHA256=b739784c8301a050c6aad7865b883ad06de5a6363fe0f2170cc9b502c728005b
+
+# 386 pin: set after first Quad4 haiku/386 bootstrap is published.
+# Until then, produce it with haiku/scripts/haiku-cross-386.sh on amd64 Haiku.
+HAIKU_BOOTSTRAP_URL_386=
+HAIKU_BOOTSTRAP_SHA256_386=
+
 HAIKU_BOOTSTRAP_TAG=go1.26.1-haiku1
 HAIKU_BOOTSTRAP_ALLOWED_HOSTS=github.com
 HAIKU_BOOTSTRAP_ALLOWED_REPOS=korli/go,Quad4-Software/go-haiku
