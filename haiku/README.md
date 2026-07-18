@@ -9,6 +9,7 @@ Based on [korli/go](https://github.com/korli/go), synced with
 ## Start here
 
 - [README.md](../README.md) — install and build
+- [AGENTS.md](../AGENTS.md) — maintenance / updater agent playbook
 - [CHANGES.md](CHANGES.md) — auditable change log (CVEs, CI, port fixes)
 - [HAIKU.md](../HAIKU.md) — branches, tags, security overview
 

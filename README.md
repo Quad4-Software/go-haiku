@@ -66,6 +66,7 @@ Smoke tests:
 
 | Doc | Purpose |
 |-----|---------|
+| [AGENTS.md](AGENTS.md) | Maintenance / updater agent playbook |
 | [haiku/CHANGES.md](haiku/CHANGES.md) | What this fork changed (audit trail) |
 | [haiku/README.md](haiku/README.md) | Sync, CI, release maintenance |
 | [HAIKU.md](HAIKU.md) | Branches, tags, security notes |
