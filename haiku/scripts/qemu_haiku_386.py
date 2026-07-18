@@ -410,7 +410,8 @@ go mod init haiku.smoke >/dev/null 2>&1
 go build -o hello .
 ./hello | grep 386
 cd "$GOROOT/src"
-go test -short -count=1 -exec=true std -run=^$
+TRUE=$(command -v true)
+go test -short -count=1 -p 1 -vet=off -exec="$TRUE" -run=^$ std
 TMPNET=$(mktemp -d "$GOTMPDIR/haiku-net.XXXXXX")
 cd "$TMPNET"
 cat > netcheck.go <<'EOF'

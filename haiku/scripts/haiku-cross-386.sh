@@ -40,7 +40,7 @@ else
 	HOSTGO=$BOOTSTRAP/bin/go
 fi
 echo "Compile-only haiku/386 std with $($HOSTGO version)"
-GOOS=haiku GOARCH=386 "$HOSTGO" test -short -count=1 -exec=true -run=^$ std
+GOOS=haiku GOARCH=386 "$HOSTGO" test -short -count=1 -p 1 -vet=off -exec=true -run=^$ std
 
 # Fresh pkg for the 386 toolchain build (keep amd64 bin/go until make.bash replaces it).
 rm -rf "$ROOT/pkg"

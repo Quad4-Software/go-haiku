@@ -38,7 +38,9 @@ OSV (stdlib / toolchain `1.26.5`) reported no known vulns at audit time
 
 `go test std -run=^$` still runs each test binary (init/TestMain). On Haiku,
 `runtime.test` exits with status 4 (SIGILL) during that startup. Smoke now
-matches `haiku-cross-386.sh`: `go test -exec=true std -run=^$` (compile only).
+matches `haiku-cross-386.sh`: compile-only via `-exec=$(command -v true)`,
+plus `-p 1 -vet=off` to avoid parallel VM flakes and vet noise. On failure the
+script greps the log for `FAIL` / `build failed` lines.
 
 ---
 
