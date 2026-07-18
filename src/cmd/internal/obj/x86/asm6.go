@@ -1803,9 +1803,12 @@ var opindex [(ALAST + 1) & obj.AMask]*Optab
 // around a Solaris-specific bug that should be fixed differently, but we don't know
 // what that bug is. And this does fix it.
 func useAbs(ctxt *obj.Link, s *obj.LSym) bool {
-	if ctxt.Headtype == objabi.Hhaiku || ctxt.Headtype == objabi.Hsolaris {
-		// All the Solaris dynamic imports from libc.so begin with "libc_".
-		return strings.HasPrefix(s.Name, "libc_")
+	// Solaris and Haiku dynamic imports from libc begin with "libc_".
+	// Those need absolute addressing. Other Haiku symbols must not take this
+	// path on 386: non-shared haiku/386 needs absolute immediates for local
+	// symbols (MOVL $sym, 4(SP), PUSHL $sym), same as linux/386.
+	if (ctxt.Headtype == objabi.Hsolaris || ctxt.Headtype == objabi.Hhaiku) && strings.HasPrefix(s.Name, "libc_") {
+		return true
 	}
 	return ctxt.Arch.Family == sys.I386 && !ctxt.Flag_shared
 }

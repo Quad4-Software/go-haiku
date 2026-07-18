@@ -34,6 +34,22 @@ OSV (stdlib / toolchain `1.26.5`) reported no known vulns at audit time
 
 ---
 
+## 2026-07-18 — haiku/386 asm useAbs
+
+Cross-compiling `std` for `haiku/386` failed assembling `runtime.rt0_go`:
+
+```
+MOVL $bad_proc_msg<>(SB), 4(SP)
+PUSHL $runtime.mainPC(SB)
+```
+
+`useAbs` treated every Haiku symbol like a Solaris `libc_` dynimport (never
+absolute except `libc_*`). On non-shared `haiku/386` those `$sym` immediates
+must be absolute, same as `linux/386`. Fix: only force abs for `libc_*` on
+Haiku/Solaris, otherwise keep the usual `I386 && !Flag_shared` rule.
+
+---
+
 ## 2026-07-18 — smoke std compile uses -exec=true
 
 `go test std -run=^$` still runs each test binary (init/TestMain). On Haiku,
