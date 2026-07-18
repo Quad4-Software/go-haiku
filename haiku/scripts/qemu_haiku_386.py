@@ -391,7 +391,7 @@ mkdir -p "$GOCACHE" "$GOTMPDIR"
 go version
 go env GOOS GOARCH
 test "$(go env GOARCH)" = "386"
-TMP=$(mktemp -d)
+TMP=$(mktemp -d "$GOTMPDIR/haiku-smoke.XXXXXX")
 cd "$TMP"
 cat > main.go <<'EOF'
 package main
@@ -405,7 +405,8 @@ func main() {
 	fmt.Printf("hello from %s/%s\n", runtime.GOOS, runtime.GOARCH)
 }
 EOF
-go build -o hello main.go
+go mod init haiku.smoke >/dev/null 2>&1
+go build -o hello .
 ./hello | grep 386
 go test -short -count=1 std -run=^$ >/dev/null
 cat > netcheck.go <<'EOF'
@@ -463,7 +464,8 @@ func main() {
 	fmt.Println("netcheck OK")
 }
 EOF
-go run netcheck.go
+rm -f main.go
+go run .
 echo "qemu 386 smoke OK"
 """
         with tempfile.NamedTemporaryFile("w", delete=False, suffix=".sh") as f:

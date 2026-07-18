@@ -7,12 +7,13 @@ export GOROOT="$ROOT"
 export PATH="$ROOT/bin:$PATH"
 export GOTOOLCHAIN=local
 export GOCACHE="${GOCACHE:-/boot/home/user/.cache/go-build}"
-mkdir -p "$GOCACHE"
+export GOTMPDIR="${GOTMPDIR:-/boot/home/user/tmp}"
+mkdir -p "$GOCACHE" "$GOTMPDIR"
 
 go version
 go env GOOS GOARCH GOROOT
 
-TMP=$(mktemp -d)
+TMP=$(mktemp -d "$GOTMPDIR/haiku-smoke.XXXXXX")
 trap 'rm -rf "$TMP"' EXIT
 cd "$TMP"
 cat > main.go <<'EOF'
@@ -28,8 +29,9 @@ func main() {
 }
 EOF
 
-# Single-file build: avoid "go.mod file not found" from `go build .`
-go build -o hello main.go
+# Module mode requires a go.mod for package-path builds (`go build .`).
+go mod init haiku.smoke >/dev/null 2>&1
+go build -o hello .
 ./hello
 
 # Compile std subset without network.

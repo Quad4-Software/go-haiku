@@ -34,6 +34,17 @@ OSV (stdlib / toolchain `1.26.5`) reported no known vulns at audit time
 
 ---
 
+## 2026-07-17 — CI smoke module mode
+
+Smoke helpers create a temp module (`go mod init`) under `GOTMPDIR` before
+`go build` / `go run`. Package-path builds outside a module fail with
+`go.mod file not found` under module mode.
+
+Also use `mktemp -d "$GOTMPDIR/...XXXXXX"` so temp dirs land on the prepared
+Haiku tmp volume.
+
+---
+
 ## 2026-07-17 — CI smoke compile fixes
 
 `haiku-smoke.sh` runs `go test -short std -run=^$` (compile-only). That failed on
@@ -68,8 +79,8 @@ Known requirements:
 - `z*_haiku_386.go` should be regenerated on real 32-bit Haiku when headers move.
   Timespec/Timeval/`long` are ILP32 (`time_t` is 32-bit on Haiku i386).
 - vmactions/anyvm remain amd64-only; 386 runtime coverage is the QEMU job.
-- CI smoke uses `go build main.go` (not `go build .`) so module-mode Go does not
-  require a go.mod in the temp dir.
+- CI smoke creates a temp module (`go mod init`) then `go build .` / `go run .`
+  so module-mode Go does not require a pre-existing go.mod in the work tree.
 - Haiku build scripts wipe `pkg`/`bin`, cap `GOMAXPROCS` (default 2), and CI sets
   `cache-after-prepare: false` to avoid corrupt `.a` archives under concurrent
   host image-cache I/O.

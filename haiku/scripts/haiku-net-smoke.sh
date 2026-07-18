@@ -12,7 +12,9 @@ mkdir -p "$GOCACHE"
 # Base compile/runtime smoke first.
 "$ROOT/haiku/scripts/haiku-smoke.sh"
 
-TMP=$(mktemp -d)
+export GOTMPDIR="${GOTMPDIR:-/boot/home/user/tmp}"
+mkdir -p "$GOTMPDIR"
+TMP=$(mktemp -d "$GOTMPDIR/haiku-net-smoke.XXXXXX")
 trap 'rm -rf "$TMP"' EXIT
 cd "$TMP"
 
@@ -76,5 +78,6 @@ func main() {
 }
 EOF
 
-go run netcheck.go
+go mod init haiku.netsmoke >/dev/null 2>&1
+go run .
 echo "net smoke OK"
