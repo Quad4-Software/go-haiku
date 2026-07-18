@@ -17,8 +17,8 @@ Tag format: `goVERSION-haiku.N`
 
 Examples:
 
-- `go1.26.2-haiku.1`
-- `go1.26.2-haiku.2` (rebuild / packaging fix)
+- `go1.26.5-haiku.1`
+- `go1.26.5-haiku.2` (rebuild / packaging fix)
 
 Release assets:
 
@@ -29,7 +29,7 @@ Release assets:
 
 ```sh
 curl -fsSL -o go-bootstrap.tbz \
-  https://github.com/OWNER/go-haiku/releases/download/go1.26.2-haiku.1/go-1.26.2-haiku-amd64-bootstrap.tbz
+  https://github.com/OWNER/go-haiku/releases/download/go1.26.5-haiku.1/go-1.26.5-haiku-amd64-bootstrap.tbz
 mkdir -p ~/go && tar -xjf go-bootstrap.tbz -C ~/go --strip-components=1
 export GOROOT=~/go
 export PATH="$GOROOT/bin:$PATH"

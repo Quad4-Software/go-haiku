@@ -5,7 +5,7 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)
 OUT_DIR="${1:-$ROOT/haiku/dist}"
 VERSION_LINE=$(sed -n '1p' "$ROOT/VERSION" | tr -d '\r')
-# VERSION file is like: go1.26.2
+# VERSION file is like: go1.26.5
 VERSION=${VERSION_LINE#go}
 if [ -z "$VERSION" ] || [ "$VERSION" = "$VERSION_LINE" ]; then
 	echo "could not parse VERSION ($VERSION_LINE)" >&2

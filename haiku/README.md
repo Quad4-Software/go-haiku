@@ -27,7 +27,7 @@ git fetch upstream release-branch.go1.26
 ```
 
 Or use Actions: **Haiku Sync** workflow (manual). Pick the Haiku branch and
-upstream ref (`release-branch.go1.26` or `go1.26.2`). It opens a PR by default.
+upstream ref (`release-branch.go1.26` or `go1.26.5`). It opens a PR by default.
 
 Resolve conflicts, push, wait for Haiku CI.
 
@@ -39,8 +39,8 @@ Actions: **Haiku Release**
 
 Inputs:
 
-- `go_version` e.g. `1.26.2` (must match `VERSION` after build, or will be written)
-- `haiku_revision` e.g. `1` -> tag `go1.26.2-haiku.1`
+- `go_version` e.g. `1.26.5` (must match `VERSION` after build, or will be written)
+- `haiku_revision` e.g. `1` -> tag `go1.26.5-haiku.1`
 - `ref` git ref to build (branch/SHA, default current)
 - `bootstrap_url` optional seed bootstrap URL
 - `run_tests` run smoke tests before packaging
@@ -50,8 +50,8 @@ Inputs:
 Push a tag matching `go*-haiku.*`:
 
 ```sh
-git tag go1.26.2-haiku.1
-git push origin go1.26.2-haiku.1
+git tag go1.26.5-haiku.1
+git push origin go1.26.5-haiku.1
 ```
 
 ## Bootstrap seed

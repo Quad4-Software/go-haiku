@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       go_version:
-        description: Go version without go prefix (e.g. 1.26.2)
+        description: Go version without go prefix (e.g. 1.26.5)
         required: true
         type: string
       haiku_revision:
