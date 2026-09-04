@@ -58,9 +58,14 @@ jobs:
     outputs:
       run_qemu_386: ${{ steps.boot.outputs.qemu_386 }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+      - name: Harden runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
+          egress-policy: audit
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
           fetch-depth: 0
 
       - name: Audit upstream CVEs
@@ -133,7 +138,7 @@ jobs:
             rm -rf bin pkg 2>/dev/null || true
 
       - name: Upload 386 bootstrap artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: haiku-386-bootstrap
           path: |
@@ -149,8 +154,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 360
     steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+          with:
+            persist-credentials: false
 
       - name: Download 386 bootstrap
         uses: actions/download-artifact@v4
