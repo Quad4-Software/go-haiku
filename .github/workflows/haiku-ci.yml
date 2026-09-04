@@ -63,7 +63,7 @@ jobs:
         with:
           egress-policy: audit
       - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -104,7 +104,7 @@ jobs:
           fi
 
       - name: Build on Haiku (amd64 + cross 386)
-        uses: vmactions/haiku-vm@0ba6b98c8d7e5626f9defdd7403af49ad72b51df # v1.1.3
+        uses: vmactions/haiku-vm@6a07e023ed05895c09aa73843b58cfa671f34594 # v1.1.5
         with:
           release: ${{ env.HAIKU_RELEASE }}
           usesh: true
@@ -138,7 +138,7 @@ jobs:
             rm -rf bin pkg 2>/dev/null || true
 
       - name: Upload 386 bootstrap artifact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: haiku-386-bootstrap
           path: |
@@ -159,12 +159,12 @@ jobs:
         with:
           egress-policy: audit
       - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: Download 386 bootstrap
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: haiku-386-bootstrap
           path: haiku/dist
@@ -185,7 +185,7 @@ jobs:
           command -v qemu-system-i386 || command -v qemu-system-x86_64
 
       - name: Cache Haiku x86 qcow2
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: haiku/qemu-386
           key: haiku-r1beta5-x86-gcc2h-ssh-v1
