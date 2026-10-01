@@ -50,6 +50,8 @@ Linux-hosted `GOOS=haiku` compile/link fixes needed after the merge (both arches
 
 `GOOS=haiku GOARCH=amd64` and `GOOS=haiku GOARCH=386` now compile `std` and link `net` hello from Linux. Reticulum-Go `cmd/reticulum-go` (go 1.27.1, `-mod=vendor`, `CGO_ENABLED=0`) also links for both Haiku arches.
 
+Guest runtime (anyvm Haiku r1beta5 x86_64, QEMU TCG when nested KVM cannot create vCPUs): Linux-cross `haiku/amd64` binaries run on the guest. Validated `haiku/testdata/runtime-smoke` (file I/O, loopback TCP, `crypto/rand`), Haiku-native `go version` (GOROOT set for a trimmed `bin/haiku_amd64/go`), and Reticulum-Go `self-check --quick`. Helper: `haiku/scripts/anyvm-haiku-runtime.sh` (default `--tcg`). `HAIKU_QEMU_ACCEL=tcg` forces TCG in the QEMU amd64 helper when `/dev/kvm` is present but broken.
+
 CI, docs, and `sync-upstream.sh` defaults now track `release-branch.go1.27`.
 
 QEMU amd64 guest helper: `haiku/scripts/qemu-haiku-amd64-smoke.sh` (installed r1beta5 x86_64 anyboot).

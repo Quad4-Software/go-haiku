@@ -52,6 +52,13 @@ def which_qemu() -> str:
 
 
 def qemu_accel() -> list[str]:
+    # HAIKU_QEMU_ACCEL=tcg when /dev/kvm exists but vCPU create is broken
+    # (nested hosts that BUG in kvm_arch_vcpu_create).
+    forced = os.environ.get("HAIKU_QEMU_ACCEL", "").strip().lower()
+    if forced in ("tcg", "soft", "emu"):
+        return ["-accel", "tcg,thread=multi"]
+    if forced == "kvm":
+        return ["-accel", "kvm"]
     if os.path.exists("/dev/kvm") and os.access("/dev/kvm", os.R_OK | os.W_OK):
         return ["-accel", "kvm"]
     return ["-accel", "tcg,thread=multi"]

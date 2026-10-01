@@ -27,6 +27,8 @@ Based on [korli/go](https://github.com/korli/go), synced with
 | `haiku/scripts/haiku-net-smoke.sh` | Loopback TCP/UDP smoke |
 | `haiku/scripts/qemu-haiku-386-smoke.sh` | QEMU Haiku x86 runtime smoke (prepare + SSH) |
 | `haiku/scripts/qemu-haiku-amd64-smoke.sh` | QEMU Haiku x86_64 runtime smoke (prepare + SSH) |
+| `haiku/scripts/anyvm-haiku-runtime.sh` | Docker anyvm Haiku r1beta5 runtime smoke (TCG-safe) |
+| `haiku/testdata/runtime-smoke` | Cross-built Haiku guest smoke (files, TCP, rand) |
 | `haiku/scripts/resolve-bootstrap-url.sh` | Resolve pinned bootstrap URL + hash |
 | `haiku/scripts/fetch-bootstrap.sh` | Download, verify SHA-256, extract |
 | `haiku/scripts/audit-upstream-cves.sh` | Fail if upstream CVE commits are missing |
@@ -65,8 +67,13 @@ both arches.
 
 ## CI notes
 
-- Guest amd64: Haiku r1beta5 via `vmactions/haiku-vm`
+- Guest amd64: Haiku r1beta5 via `vmactions/haiku-vm`, or local
+  `haiku/scripts/anyvm-haiku-runtime.sh` (QEMU in Docker). Nested KVM hosts
+  that fail `kvm_arch_vcpu_create` should keep the default `--tcg`.
 - Guest 386: QEMU + official `x86_gcc2h` anyboot (not anyvm; no x86 image there yet)
+- Linux-hosted `GOOS=haiku GOARCH=amd64 ./src/make.bash` produces
+  `bin/haiku_amd64/go` plus `pkg/tool/haiku_amd64/*` (Haiku ELFs). That is a
+  cross toolchain, not an on-Haiku bootstrap.
 - Cross-compile **to** haiku/386 is supported **on amd64 Haiku** via
   `haiku-cross-386.sh`. Bootstrapping Haiku Go from Linux is not supported.
 - On hybrids always `setarch x86` for modern gcc/libs (never `x86_gcc2`)
