@@ -111,7 +111,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -148,7 +148,7 @@ jobs:
           cat VERSION
 
       - name: Build and package on Haiku
-        uses: vmactions/haiku-vm@0ba6b98c8d7e5626f9defdd7403af49ad72b51df # v1.1.3
+        uses: vmactions/haiku-vm@6a07e023ed05895c09aa73843b58cfa671f34594 # v1.1.5
         with:
           release: ${{ env.HAIKU_RELEASE }}
           usesh: true
