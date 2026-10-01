@@ -2,8 +2,8 @@
 # Merge an upstream Go ref into a Haiku maintenance branch.
 set -eu
 
-HAIKU_BRANCH=golang-1.26-haiku
-UPSTREAM_REF=release-branch.go1.26
+HAIKU_BRANCH=golang-1.27-haiku
+UPSTREAM_REF=release-branch.go1.27
 UPSTREAM_REMOTE=upstream
 DRY_RUN=0
 
@@ -12,8 +12,8 @@ usage() {
 Usage: sync-upstream.sh [options]
 
 Options:
-  --haiku-branch NAME   Haiku line branch (default: golang-1.26-haiku)
-  --upstream-ref REF    Upstream branch or tag (default: release-branch.go1.26)
+  --haiku-branch NAME   Haiku line branch (default: golang-1.27-haiku)
+  --upstream-ref REF    Upstream branch or tag (default: release-branch.go1.27)
   --upstream-remote R   Remote name for golang/go (default: upstream)
   --dry-run             Fetch and show merge plan only
   -h, --help            Show help

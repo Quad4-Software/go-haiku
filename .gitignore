@@ -55,3 +55,4 @@ _testmain.go
 # go-haiku packaging
 haiku/dist/
 haiku/qemu-386/
+haiku/qemu-amd64/

@@ -26,6 +26,7 @@ Based on [korli/go](https://github.com/korli/go), synced with
 | `haiku/scripts/haiku-smoke.sh` | Post-build smoke tests |
 | `haiku/scripts/haiku-net-smoke.sh` | Loopback TCP/UDP smoke |
 | `haiku/scripts/qemu-haiku-386-smoke.sh` | QEMU Haiku x86 runtime smoke (prepare + SSH) |
+| `haiku/scripts/qemu-haiku-amd64-smoke.sh` | QEMU Haiku x86_64 runtime smoke (prepare + SSH) |
 | `haiku/scripts/resolve-bootstrap-url.sh` | Resolve pinned bootstrap URL + hash |
 | `haiku/scripts/fetch-bootstrap.sh` | Download, verify SHA-256, extract |
 | `haiku/scripts/audit-upstream-cves.sh` | Fail if upstream CVE commits are missing |
@@ -36,11 +37,11 @@ Based on [korli/go](https://github.com/korli/go), synced with
 ## Sync from upstream
 
 ```sh
-git fetch upstream release-branch.go1.26
+git fetch upstream release-branch.go1.27
 
 ./haiku/scripts/sync-upstream.sh \
-  --haiku-branch golang-1.26-haiku \
-  --upstream-ref release-branch.go1.26
+  --haiku-branch golang-1.27-haiku \
+  --upstream-ref release-branch.go1.27
 ```
 
 Or use Actions: **Haiku Sync**.
@@ -49,7 +50,7 @@ Or use Actions: **Haiku Sync**.
 
 Actions: **Haiku Release**
 
-- `go_version` e.g. `1.26.5` → tag `go1.26.5-haiku.N`
+- `go_version` e.g. `1.27.1` → tag `go1.27.1-haiku.N`
 - `bootstrap_url` + `bootstrap_sha256` when overriding the lock
 - Publishes amd64 + 386 bootstrap `.tbz` files and combined `SHA256SUMS`
 

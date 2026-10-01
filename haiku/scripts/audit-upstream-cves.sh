@@ -6,7 +6,7 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname "$0")/../.." && pwd)
 cd "$ROOT"
 
-UPSTREAM_REF=${1:-upstream/release-branch.go1.26}
+UPSTREAM_REF=${1:-upstream/release-branch.go1.27}
 VERSION_LINE=$(sed -n '1p' VERSION | tr -d '\r')
 BASE_TAG=$VERSION_LINE
 MISS_FILE="${TMPDIR:-/tmp}/haiku-cve-missing.$$"

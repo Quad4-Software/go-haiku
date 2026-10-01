@@ -6,12 +6,12 @@ on:
       haiku_branch:
         description: Haiku line branch to update
         required: true
-        default: golang-1.26-haiku
+        default: golang-1.27-haiku
         type: string
       upstream_ref:
         description: Upstream golang/go ref (branch or tag)
         required: true
-        default: release-branch.go1.26
+        default: release-branch.go1.27
         type: string
       create_pr:
         description: Open a pull request instead of pushing the branch directly

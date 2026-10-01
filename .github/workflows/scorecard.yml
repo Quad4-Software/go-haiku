@@ -7,6 +7,7 @@ on:
     - cron: "17 9 * * 1"
   push:
     branches:
+      - golang-1.27-haiku
       - golang-1.26-haiku
   workflow_dispatch:
 

@@ -73,10 +73,10 @@ jobs:
           set -euo pipefail
           git remote add upstream https://github.com/golang/go.git 2>/dev/null || git remote set-url upstream https://github.com/golang/go.git
           ver=$(sed -n '1p' VERSION | tr -d '\r')
-          git fetch --depth=200 upstream release-branch.go1.26
+          git fetch --depth=200 upstream release-branch.go1.27
           git fetch upstream "refs/tags/${ver}:refs/tags/${ver}" || true
           chmod +x haiku/scripts/*.sh
-          ./haiku/scripts/audit-upstream-cves.sh upstream/release-branch.go1.26
+          ./haiku/scripts/audit-upstream-cves.sh upstream/release-branch.go1.27
 
       - name: Resolve bootstrap
         id: boot

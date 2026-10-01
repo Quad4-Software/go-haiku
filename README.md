@@ -11,7 +11,7 @@
   Based on <a href="https://github.com/korli/go">korli/go</a> · synced with <a href="https://github.com/golang/go">golang/go</a>
 </p>
 
-**Current line:** Go **1.26.5** (+ post-tag CVE fixes) on branch `golang-1.26-haiku`
+**Current line:** Go **1.27.1** on branch `golang-1.27-haiku`
 
 ## Install (release)
 
@@ -20,12 +20,12 @@ Prefer a release bootstrap when available:
 - [Releases](https://github.com/Quad4-Software/go-haiku/releases)
 
 ```sh
-# Example once go1.26.5-haiku.1 is published (amd64 or 386 asset):
+# Example once go1.27.1-haiku.1 is published (amd64 or 386 asset):
 ARCH=amd64   # or 386
 curl -fsSL -o go.tbz \
-  https://github.com/Quad4-Software/go-haiku/releases/download/go1.26.5-haiku.1/go-1.26.5-haiku-${ARCH}-bootstrap.tbz
+  https://github.com/Quad4-Software/go-haiku/releases/download/go1.27.1-haiku.1/go-1.27.1-haiku-${ARCH}-bootstrap.tbz
 curl -fsSL -o SHA256SUMS \
-  https://github.com/Quad4-Software/go-haiku/releases/download/go1.26.5-haiku.1/SHA256SUMS
+  https://github.com/Quad4-Software/go-haiku/releases/download/go1.27.1-haiku.1/SHA256SUMS
 sha256sum -c SHA256SUMS --ignore-missing
 mkdir -p ~/go && tar -xjf go.tbz -C ~/go --strip-components=1
 export GOROOT=~/go
@@ -49,7 +49,7 @@ You need an existing Haiku Go bootstrap (`GOROOT_BOOTSTRAP`).
 ```sh
 git clone https://github.com/Quad4-Software/go-haiku.git
 cd go-haiku
-git checkout golang-1.26-haiku
+git checkout golang-1.27-haiku
 
 # Bootstrap: release asset or korli seed (see haiku/bootstrap.lock)
 ./haiku/scripts/fetch-bootstrap.sh ~/go-bootstrap
@@ -95,7 +95,7 @@ https://go.dev/doc/
 
 - Bootstrap downloads are **URL-allowlisted** and **SHA-256 pinned**
 - Releases publish `SHA256SUMS`
-- CI runs `haiku/scripts/audit-upstream-cves.sh` against `upstream/release-branch.go1.26`
+- CI runs `haiku/scripts/audit-upstream-cves.sh` against `upstream/release-branch.go1.27`
 - See [haiku/CHANGES.md](haiku/CHANGES.md) for CVE merges and port fixes
 
 ## License
