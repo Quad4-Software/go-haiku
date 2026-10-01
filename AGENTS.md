@@ -11,7 +11,7 @@ touching CI/bootstrap.
 | Fact | Value |
 |------|--------|
 | GitHub | https://github.com/Quad4-Software/go-haiku |
-| Active branch | `golang-1.26-haiku` |
+| Active branch | `golang-1.27-haiku` |
 | Upstream | https://github.com/golang/go (`upstream` remote) |
 | Port lineage | Started from [korli/go](https://github.com/korli/go) (do **not** add korli as a remote) |
 | CI guest (amd64) | Haiku **r1beta5** via `vmactions/haiku-vm` |
@@ -58,7 +58,7 @@ When you land a meaningful port, security, or CI change, **append** to
 
 2. **CVE currency**
    - After every upstream sync, run:
-     `./haiku/scripts/audit-upstream-cves.sh upstream/release-branch.go1.26`
+     `./haiku/scripts/audit-upstream-cves.sh upstream/release-branch.go1.27`
    - CI already runs this. Local agents must run it before declaring a sync done.
    - Merge **post-tag** commits on `upstream/release-branch.go1.N` that fix CVEs
      even when `VERSION` still says `go1.N.M` (until a new point release exists).
@@ -81,21 +81,21 @@ When you land a meaningful port, security, or CI change, **append** to
 
 ## Routine upkeep tasks
 
-### A. Sync a new upstream point release (e.g. go1.26.6)
+### A. Sync a new upstream point release (e.g. go1.27.1)
 
 ```sh
 git fetch upstream --tags
-git fetch upstream release-branch.go1.26
+git fetch upstream release-branch.go1.27
 
 # Prefer syncing the tag when it exists:
 ./haiku/scripts/sync-upstream.sh \
-  --haiku-branch golang-1.26-haiku \
-  --upstream-ref go1.26.6
+  --haiku-branch golang-1.27-haiku \
+  --upstream-ref go1.27.1
 
 # Or track the branch tip (includes post-tag CVE fixes):
 ./haiku/scripts/sync-upstream.sh \
-  --haiku-branch golang-1.26-haiku \
-  --upstream-ref release-branch.go1.26
+  --haiku-branch golang-1.27-haiku \
+  --upstream-ref release-branch.go1.27
 ```
 
 Then:
@@ -106,15 +106,15 @@ Then:
 3. Run `./haiku/scripts/audit-upstream-cves.sh`.
 4. Bump docs/examples that hardcode the Go version if needed.
 5. Append `haiku/CHANGES.md`.
-6. Push `golang-1.26-haiku` and wait for Haiku CI.
+6. Push `golang-1.27-haiku` and wait for Haiku CI.
 7. Cut a release when CI is green (see below).
 
 ### B. Security-only catch-up (no new tag yet)
 
 ```sh
-git fetch upstream release-branch.go1.26
+git fetch upstream release-branch.go1.27
 ./haiku/scripts/audit-upstream-cves.sh
-# If FAIL: merge upstream/release-branch.go1.26 (or cherry-pick the MISSING commits)
+# If FAIL: merge upstream/release-branch.go1.27 (or cherry-pick the MISSING commits)
 ```
 
 Check OSV for stdlib/toolchain at the current `VERSION`, and always check
@@ -122,7 +122,7 @@ commits **after** the tag on the release branch.
 
 ### C. Release a Haiku bootstrap
 
-Tag format: `goVERSION-haiku.N` (example `go1.26.5-haiku.1`).
+Tag format: `goVERSION-haiku.N` (example `go1.27.1-haiku.1`).
 
 Use Actions **Haiku Release** (preferred) or push a matching tag.
 

@@ -252,6 +252,16 @@ func adddynrel(target *ld.Target, ldr *loader.Loader, syms *ld.ArchSyms, s loade
 		return true
 
 	case objabi.R_ADDR:
+		if target.IsHaiku() && targType == sym.SDYNIMPORT {
+			if target.IsExternal() {
+				return true
+			}
+			addpltsym(target, ldr, syms, targ)
+			su := ldr.MakeSymbolUpdater(s)
+			su.SetRelocSym(rIdx, syms.PLT)
+			su.SetRelocAdd(rIdx, r.Add()+int64(ldr.SymPlt(targ)))
+			return true
+		}
 		if !ldr.SymType(s).IsDATA() {
 			break
 		}

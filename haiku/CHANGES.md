@@ -3,8 +3,7 @@
 Living log of intentional differences from upstream `golang/go` and from
 `korli/go`. Newest entries first.
 
-Baseline for this document: branch `golang-1.26-haiku`, `VERSION` = `go1.26.5`,
-plus selected post-tag merges from `upstream/release-branch.go1.26`.
+Baseline for this document: branch `golang-1.27-haiku`, `VERSION` = `go1.27.1`.
 
 ## How to verify
 
@@ -13,24 +12,49 @@ plus selected post-tag merges from `upstream/release-branch.go1.26`.
 #   origin    git@github.com:Quad4-Software/go-haiku.git
 #   upstream  https://github.com/golang/go.git
 
-git fetch upstream release-branch.go1.26
-git fetch upstream tag go1.26.5
+git fetch upstream release-branch.go1.27
+git fetch upstream tag go1.27.1
 
 # Fail if upstream CVE commits after VERSION are missing from HEAD
-./haiku/scripts/audit-upstream-cves.sh upstream/release-branch.go1.26
-
-# Bootstrap pin (URL + SHA-256)
-cat haiku/bootstrap.lock
-./haiku/scripts/resolve-bootstrap-url.sh
-HAIKU_BOOTSTRAP_ARCH=386 ./haiku/scripts/resolve-bootstrap-url.sh  # after 386 pin exists
-
-# Platforms
-# go tool dist list | grep haiku
-# expect haiku/amd64 and haiku/386
+./haiku/scripts/audit-upstream-cves.sh upstream/release-branch.go1.27
 ```
 
-OSV (stdlib / toolchain `1.26.5`) reported no known vulns at audit time
-(2026-07-17). Post-tag CVEs below were still missing until merged.
+---
+
+## 2026-10-01 — Go 1.27.1
+
+Merged upstream `go1.27.1` onto the Haiku port. New line: `golang-1.27-haiku`.
+
+Port carry-forwards that needed a 1.27-shaped merge:
+
+| Area | Change |
+|------|--------|
+| `src/runtime/cgo` | Dropped `gcc_haiku_{amd64,386}.c`. Go 1.27 unified unix cgo into `gcc_unix.c` + `pthread_unix.c` + `gcc_libinit_unix.c` (`//go:build unix`, which includes Haiku). The old 2-arg `x_cgo_init` would duplicate symbols and not match the 1.27 4-arg signature. |
+| `internal/poll` `writev` | Keep Haiku on the libc `writev` path (`fd_writev_libc.go` + `syscall/linkname_libc.go`). |
+| `net` DNS | Use 1.27 `getSystemDNSConfigNamed` with `/boot/system/settings/network/resolv.conf` on Haiku. |
+| `cmd/go` cgo | Do not pass `-pthread` on Haiku. |
+| `crypto/rand` | Keep Haiku `getentropy` max 256 bytes. |
+| sockets | Stay on Darwin-style cloexec (`sys_cloexec.go`). r1beta5 still lacks `SOCK_CLOEXEC` as a socket type flag. |
+| bootstrap | korli `go1.26.1-haiku1` still meets `minBootstrap` (`go1.24.6`) until Quad4 publishes 1.27 bootstraps. |
+
+Linux-hosted `GOOS=haiku` compile/link fixes needed after the merge (both arches):
+
+| Area | Change |
+|------|--------|
+| `runtime` | `libpreinit` + `newosproc0` stub so 1.27 `libInit` links without cgo |
+| `internal/syscall/unix` | `AT_FDCWD = -0x64` (386 cannot use the unsigned 32-bit form) |
+| `os.stat_haiku` | `time.Unix(ts.Unix())` so 386 Timespec (int32) matches `time.Unix` |
+| `syscall` | `//go:linkname` on `sysvicall6` / `rawSysvicall6` (1.27 linker) |
+| `cmd/link` x86 | Haiku `R_ADDR` to `SDYNIMPORT` goes through PLT (386 libc pointers) |
+| `runtime` 386 | no-op `setldt` and skip `ldt0setup` (TLS comes from runtime_loader) |
+
+`GOOS=haiku GOARCH=amd64` and `GOOS=haiku GOARCH=386` now compile `std` and link `net` hello from Linux. Reticulum-Go `cmd/reticulum-go` (go 1.27.1, `-mod=vendor`, `CGO_ENABLED=0`) also links for both Haiku arches.
+
+Guest runtime (anyvm Haiku r1beta5 x86_64, QEMU TCG when nested KVM cannot create vCPUs): Linux-cross `haiku/amd64` binaries run on the guest. Validated `haiku/testdata/runtime-smoke` (file I/O, loopback TCP, `crypto/rand`), Haiku-native `go version` (GOROOT set for a trimmed `bin/haiku_amd64/go`), and Reticulum-Go `self-check --quick`. Helper: `haiku/scripts/anyvm-haiku-runtime.sh` (default `--tcg`). `HAIKU_QEMU_ACCEL=tcg` forces TCG in the QEMU amd64 helper when `/dev/kvm` is present but broken.
+
+CI, docs, and `sync-upstream.sh` defaults now track `release-branch.go1.27`.
+
+QEMU amd64 guest helper: `haiku/scripts/qemu-haiku-amd64-smoke.sh` (installed r1beta5 x86_64 anyboot).
 
 ---
 

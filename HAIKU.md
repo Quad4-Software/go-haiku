@@ -6,13 +6,14 @@ Companion to the root [README.md](README.md).
 
 | Branch | Purpose |
 |--------|---------|
-| `golang-1.26-haiku` | Active Go 1.26 Haiku line (default) |
+| `golang-1.27-haiku` | Active Go 1.27 Haiku line |
+| `golang-1.26-haiku` | Previous Go 1.26 Haiku line |
 | `golang-1.XX-haiku` | Future major lines |
 | `golang-master-haiku` | Tracking upstream master (experimental) |
 
 ## Tags
 
-Format: `goVERSION-haiku.N` (example: `go1.26.5-haiku.1`)
+Format: `goVERSION-haiku.N` (example: `go1.27.1-haiku.1`)
 
 Assets:
 
@@ -61,4 +62,4 @@ Short version:
 
 - Bootstrap pin + allowlist: `haiku/bootstrap.lock`
 - CVE gate: `./haiku/scripts/audit-upstream-cves.sh`
-- Tree includes post-`go1.26.5` fixes for CVE-2026-56853 and CVE-2026-39821
+- Tree is based on upstream `go1.27.1`
