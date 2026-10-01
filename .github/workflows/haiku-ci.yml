@@ -1,4 +1,4 @@
-# Pinned: vmactions/haiku-vm@v1.1.3  0ba6b98c8d7e5626f9defdd7403af49ad72b51df
+# Pinned: vmactions/haiku-vm@v1.1.5  6a07e023ed05895c09aa73843b58cfa671f34594
 name: Haiku CI
 
 on:
@@ -164,7 +164,7 @@ jobs:
           persist-credentials: false
 
       - name: Download 386 bootstrap
-        uses: actions/download-artifact@v8
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: haiku-386-bootstrap
           path: haiku/dist
@@ -174,9 +174,9 @@ jobs:
           set -euo pipefail
           sudo apt-get update -qq
           sudo apt-get install -y -qq --no-install-recommends \
-            qemu-system-x86 qemu-utils curl openssh-client sshpass \
-            tesseract-ocr
-          python3 -m pip install -q --user vncdotool
+            qemu-system-x86 qemu-system-gui qemu-utils curl \
+            openssh-client sshpass tesseract-ocr pipx
+          pipx install vncdotool
           echo "$HOME/.local/bin" >> "$GITHUB_PATH"
           export PATH="$HOME/.local/bin:$PATH"
           chmod +x haiku/scripts/*.sh haiku/scripts/qemu_haiku_386.py
@@ -185,7 +185,7 @@ jobs:
           command -v qemu-system-i386 || command -v qemu-system-x86_64
 
       - name: Cache Haiku x86 qcow2
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: haiku/qemu-386
           key: haiku-r1beta5-x86-gcc2h-ssh-v1

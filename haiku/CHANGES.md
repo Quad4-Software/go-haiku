@@ -21,6 +21,23 @@ git fetch upstream tag go1.27.1
 
 ---
 
+## 2026-10-01 — Haiku CI SHA pins
+
+GitHub Actions org policy requires every `uses:` to be a full-length commit
+SHA. Dependabot left `actions/download-artifact@v8` and `actions/cache@v6`
+on floating tags, so Haiku CI aborted at startup (`startup_failure`) before
+any job ran.
+
+Pinned:
+
+- `actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c` (v8.0.1)
+- `actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9` (v6.1.0)
+
+QEMU 386 host deps now install `qemu-system-gui` (VNC display module) and
+`vncdotool` via `pipx` so Ubuntu 24.04 runners do not hit PEP 668.
+
+---
+
 ## 2026-10-01 — Go 1.27.1
 
 Merged upstream `go1.27.1` onto the Haiku port. New line: `golang-1.27-haiku`.
