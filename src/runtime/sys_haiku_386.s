@@ -12,6 +12,11 @@
 TEXT runtime·settls(SB),NOSPLIT,$0
 	RET
 
+// pthread / runtime_loader already set up TLS. ldt0setup still
+// references this symbol on 386, so keep a no-op.
+TEXT runtime·setldt(SB),NOSPLIT,$0
+	RET
+
 // void libc_miniterrno(void *(*_errnop)(void));
 //
 // Set the TLS errno pointer in M.

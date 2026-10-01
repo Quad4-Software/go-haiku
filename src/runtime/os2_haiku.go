@@ -205,6 +205,25 @@ func newosproc(mp *m) {
 	}
 }
 
+// Called to do synchronous initialization of Go code built with
+// -buildmode=c-archive or -buildmode=c-shared.
+// None of the Go runtime is initialized.
+//
+//go:nosplit
+//go:nowritebarrierrec
+func libpreinit() {
+	initsig(true)
+}
+
+// Version of newosproc that can be called before the runtime is initialized.
+// Unreachable for typical Haiku binaries because c-archive/c-shared uses cgo
+// thread create. Keep a stub so libInit links.
+//
+//go:nosplit
+func newosproc0(stacksize uintptr, fn unsafe.Pointer) {
+	throw("bad newosproc0")
+}
+
 func exitThread(wait *atomic.Uint32) {
 	// We should never reach exitThread on Haiku because we let
 	// libroot clean up threads.

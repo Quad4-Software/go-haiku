@@ -37,6 +37,19 @@ Port carry-forwards that needed a 1.27-shaped merge:
 | sockets | Stay on Darwin-style cloexec (`sys_cloexec.go`). r1beta5 still lacks `SOCK_CLOEXEC` as a socket type flag. |
 | bootstrap | korli `go1.26.1-haiku1` still meets `minBootstrap` (`go1.24.6`) until Quad4 publishes 1.27 bootstraps. |
 
+Linux-hosted `GOOS=haiku` compile/link fixes needed after the merge (both arches):
+
+| Area | Change |
+|------|--------|
+| `runtime` | `libpreinit` + `newosproc0` stub so 1.27 `libInit` links without cgo |
+| `internal/syscall/unix` | `AT_FDCWD = -0x64` (386 cannot use the unsigned 32-bit form) |
+| `os.stat_haiku` | `time.Unix(ts.Unix())` so 386 Timespec (int32) matches `time.Unix` |
+| `syscall` | `//go:linkname` on `sysvicall6` / `rawSysvicall6` (1.27 linker) |
+| `cmd/link` x86 | Haiku `R_ADDR` to `SDYNIMPORT` goes through PLT (386 libc pointers) |
+| `runtime` 386 | no-op `setldt` and skip `ldt0setup` (TLS comes from runtime_loader) |
+
+`GOOS=haiku GOARCH=amd64` and `GOOS=haiku GOARCH=386` now compile `std` and link `net` hello from Linux. Reticulum-Go `cmd/reticulum-go` (go 1.27.1, `-mod=vendor`, `CGO_ENABLED=0`) also links for both Haiku arches.
+
 CI, docs, and `sync-upstream.sh` defaults now track `release-branch.go1.27`.
 
 QEMU amd64 guest helper: `haiku/scripts/qemu-haiku-amd64-smoke.sh` (installed r1beta5 x86_64 anyboot).

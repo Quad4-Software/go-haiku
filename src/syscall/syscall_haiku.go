@@ -18,7 +18,13 @@ func Syscall(trap, a1, a2, a3 uintptr) (r1, r2 uintptr, err Errno)
 func RawSyscall(trap, a1, a2, a3 uintptr) (r1, r2 uintptr, err Errno)
 
 // Implemented in asm_haiku_$GOARCH.s.
+//
+// Accessed via assembly in internal/syscall/unix.
+//
+//go:linkname rawSysvicall6
 func rawSysvicall6(trap, nargs, a1, a2, a3, a4, a5, a6 uintptr) (r1, r2 uintptr, err Errno)
+
+//go:linkname sysvicall6
 func sysvicall6(trap, nargs, a1, a2, a3, a4, a5, a6 uintptr) (r1, r2 uintptr, err Errno)
 
 // Constant expected by package but not supported
