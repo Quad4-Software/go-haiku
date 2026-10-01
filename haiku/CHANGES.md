@@ -21,6 +21,20 @@ git fetch upstream tag go1.27.1
 
 ---
 
+## 2026-10-01 — CVE-2026-78660
+
+Merged `upstream/release-branch.go1.27` after `go1.27.1`. The CVE audit in
+Haiku CI failed because HEAD did not contain
+
+`072779d815` `net/http/internal/http2: delete malformed framing-related headers`
+(Fixes CVE-2026-78660). Cherry-pick is not enough: the audit uses
+`git merge-base --is-ancestor`.
+
+Also includes the other post-tag 1.27.1 bugfixes currently on the release
+branch (net/http body/trailer, compile, runtime).
+
+---
+
 ## 2026-10-01 — Haiku CI SHA pins
 
 GitHub Actions org policy requires every `uses:` to be a full-length commit
