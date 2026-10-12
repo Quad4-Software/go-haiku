@@ -62,4 +62,4 @@ Short version:
 
 - Bootstrap pin + allowlist: `haiku/bootstrap.lock`
 - CVE gate: `./haiku/scripts/audit-upstream-cves.sh`
-- Tree is based on upstream `go1.27.1`
+- Tree is based on upstream `go1.27.2`

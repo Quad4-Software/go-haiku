@@ -3,7 +3,7 @@
 Living log of intentional differences from upstream `golang/go` and from
 `korli/go`. Newest entries first.
 
-Baseline for this document: branch `golang-1.27-haiku`, `VERSION` = `go1.27.1`.
+Baseline for this document: branch `golang-1.27-haiku`, `VERSION` = `go1.27.2`.
 
 ## How to verify
 
@@ -13,11 +13,38 @@ Baseline for this document: branch `golang-1.27-haiku`, `VERSION` = `go1.27.1`.
 #   upstream  https://github.com/golang/go.git
 
 git fetch upstream release-branch.go1.27
-git fetch upstream tag go1.27.1
+git fetch upstream tag go1.27.2
 
 # Fail if upstream CVE commits after VERSION are missing from HEAD
 ./haiku/scripts/audit-upstream-cves.sh upstream/release-branch.go1.27
 ```
+
+---
+
+## 2026-10-12 — go1.27.2 security merge
+
+Merged `upstream/release-branch.go1.27` (now `go1.27.2`) into the Haiku
+line. Scheduled Haiku CI (run 37325814813, HEAD 6f78c909) failed Audit
+upstream CVEs after PR #5 because HEAD did not contain these four
+commits:
+
+`68fa7699a2` `cmd/go: always verify toolchain downloads with sumdb`
+(Fixes CVE-2026-94447)
+
+`1e4f1fec6f` `cmd/go: bundle go.sum h1 hashes for golang.org/fips140`
+(Fixes CVE-2026-94444)
+
+`6e2cfab0a1` `html/template: recognize yield as regexp preceder keyword`
+(Fixes CVE-2026-97030)
+
+`b26d150e69` `html/template: reset JS context for template expressions`
+(Fixes CVE-2026-94448)
+
+Cherry-pick is not enough. The audit uses `git merge-base --is-ancestor`.
+
+Also includes CVE-2026-78659 (`cbb0fb8b51` net/http trailer header
+limits) and the other post-go1.27.1 fixes on the release branch (http2
+flow and window, net/http CONNECT, crypto/tls ECH, os.Root junctions).
 
 ---
 
