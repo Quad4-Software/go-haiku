@@ -59,7 +59,7 @@ jobs:
       run_qemu_386: ${{ steps.boot.outputs.qemu_386 }}
     steps:
       - name: Harden runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
       - name: Checkout
@@ -104,7 +104,7 @@ jobs:
           fi
 
       - name: Build on Haiku (amd64 + cross 386)
-        uses: vmactions/haiku-vm@6a07e023ed05895c09aa73843b58cfa671f34594 # v1.1.5
+        uses: vmactions/haiku-vm@4d49d1f4d8c265fe5b27c41aa98b7153255d9d4c # v1.1.6
         with:
           release: ${{ env.HAIKU_RELEASE }}
           usesh: true
@@ -138,7 +138,7 @@ jobs:
             rm -rf bin pkg 2>/dev/null || true
 
       - name: Upload 386 bootstrap artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: haiku-386-bootstrap
           path: |
@@ -155,7 +155,7 @@ jobs:
     timeout-minutes: 360
     steps:
       - name: Harden runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
       - name: Checkout
@@ -164,7 +164,7 @@ jobs:
           persist-credentials: false
 
       - name: Download 386 bootstrap
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: haiku-386-bootstrap
           path: haiku/dist

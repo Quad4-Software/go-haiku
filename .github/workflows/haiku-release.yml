@@ -60,7 +60,7 @@ jobs:
     timeout-minutes: 240
     steps:
       - name: Harden runner
-        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        uses: step-security/harden-runner@ccd8616d44fd3846e67624a50d5aad6d37bf2d25 # v2.22.1
         with:
           egress-policy: audit
       - name: Resolve versions
@@ -148,7 +148,7 @@ jobs:
           cat VERSION
 
       - name: Build and package on Haiku
-        uses: vmactions/haiku-vm@6a07e023ed05895c09aa73843b58cfa671f34594 # v1.1.5
+        uses: vmactions/haiku-vm@4d49d1f4d8c265fe5b27c41aa98b7153255d9d4c # v1.1.6
         with:
           release: ${{ env.HAIKU_RELEASE }}
           usesh: true
